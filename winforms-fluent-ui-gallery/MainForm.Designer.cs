@@ -40,7 +40,7 @@
             this.progressRing1.Size = new System.Drawing.Size(75, 75);
             this.progressRing1.TabIndex = 0;
             this.progressRing1.Text = "progressRing1";
-            this.progressRing1.Value = 0F;
+            this.progressRing1.Value = 50F;
             // 
             // MainForm
             // 
