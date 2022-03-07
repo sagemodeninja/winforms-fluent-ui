@@ -1,18 +1,23 @@
 ﻿using System.ComponentModel;
 using System.Drawing.Drawing2D;
+using WinForms.Fluent.UI.Utilities.Classes;
+using WinForms.Fluent.UI.Utilities.Helpers;
 
 namespace WinForms.Fluent.UI
 {
     public class ProgressRing : Control
     {
         private const float START_ANGLE = -90F;
-        private const int BASE_ELLIPSE_OFFSET = 1;
-        private const float POINT_OFFSET = 1.2225F;
+        private const int ANIMATION_TIMER_ID = 0x001;
+
+        private readonly Color _color;
 
         private float _value;
+        private bool _isIndeterminate;
         private float _maxValue;
         private float _percentage;
         private float _ellipseWidth;
+        private float _startAngle;
 
         public ProgressRing()
         {
@@ -24,7 +29,11 @@ namespace WinForms.Fluent.UI
             _value = 0;
             _maxValue = 100;
             _percentage = 0;
-            _ellipseWidth = 5;
+            _ellipseWidth = 10;
+            _startAngle = START_ANGLE;
+
+            // Windows accent color.
+            _color = GraphicsHelper.GetWindowsAccentColor();
         }
 
         [Category("Appearance")]
@@ -36,6 +45,25 @@ namespace WinForms.Fluent.UI
             {
                 _ellipseWidth = value;
                 Invalidate();
+            }
+        }
+
+        [Category("Behavior")]
+        [Description("Indicates whether progress represents a known amount of work.")]
+        public bool IsIndeterminate
+        {
+            get => _isIndeterminate;
+            set
+            {
+                _isIndeterminate = value;
+                if (IsIndeterminate)
+                {
+                    WinApi.SetTimer(Handle, (IntPtr)ANIMATION_TIMER_ID, 1, IntPtr.Zero);
+                }
+                else
+                {
+                    WinApi.KillTimer(Handle, (IntPtr) ANIMATION_TIMER_ID);
+                }
             }
         }
 
@@ -109,23 +137,17 @@ namespace WinForms.Fluent.UI
                 lock (this)
                 {
                     // Calculations.
-                    var offset = _ellipseWidth / 2 + BASE_ELLIPSE_OFFSET;
+                    var offset = _ellipseWidth / 2;
                     _percentage = (_value * _maxValue) / 100;
                     var sweepAngle = (_percentage / 100) * 360;
 
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
                     //
                     // Arc/ellipse.
                     //
-                    DrawArc(e.Graphics, offset, sweepAngle);
-                    //
-                    // Static rounded point.
-                    //
-                    DrawStaticRoundedPoint(e.Graphics, offset);
-                    // 
-                    // Moving rounded point.
-                    //
-                    DrawMovingRoundedPoint(e.Graphics, sweepAngle);
+                    DrawArc(e.Graphics, offset, _startAngle, sweepAngle);
                 }
             }
             catch
@@ -134,12 +156,60 @@ namespace WinForms.Fluent.UI
             }
         }
 
-        private void DrawArc(Graphics g, float o, float a)
+        protected override void WndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                case WinApi.WM_CREATE:
+                    if(_isIndeterminate)
+                    {
+                        WinApi.SetTimer(m.HWnd, (IntPtr) ANIMATION_TIMER_ID, 1, IntPtr.Zero);
+                    }
+                    break;
+                case WinApi.WM_DESTROY:
+                    if(_isIndeterminate)
+                    {
+                        WinApi.KillTimer(m.HWnd, (IntPtr) ANIMATION_TIMER_ID);
+                    }
+                    break;
+                case WinApi.WM_TIMER:
+                    switch ((int) m.WParam)
+                    {
+                        case ANIMATION_TIMER_ID:
+                            if (DesignMode || !_isIndeterminate)
+                                break;
+
+                            _percentage = (_value * _maxValue) / 100;
+                            var sweepAngle = (_percentage / 100) * 360;
+
+                            _startAngle += 2;
+                            sweepAngle += 5;
+
+                            if (_startAngle > 270)
+                                _startAngle = START_ANGLE;
+
+                            if (sweepAngle > 270)
+                                sweepAngle = START_ANGLE;
+
+                            _value = ((sweepAngle / 360) * 100) * 100 / _maxValue;
+
+                            Invalidate();
+                            break;
+                    }
+                    break;
+            }
+
+            base.WndProc(ref m);
+        }
+
+        private void DrawArc(Graphics g, float o, float startAngle, float sweepAngle)
         {
             //
             // Pen
             //
-            var pen = new Pen(ForeColor, _ellipseWidth);
+            var pen = new Pen(_color, _ellipseWidth);
+            pen.StartCap = LineCap.Round;
+            pen.EndCap = LineCap.Round;
             //
             // Rectangle
             //
@@ -149,57 +219,7 @@ namespace WinForms.Fluent.UI
             //
             // Draw arc to screen.
             //
-            g.DrawArc(pen, rect, START_ANGLE, a);
-        }
-
-        private void DrawStaticRoundedPoint(Graphics g, float o)
-        {
-            // 
-            // Brush
-            //
-            var pointBrush = new SolidBrush(ForeColor);
-            // 
-            // Size
-            // 
-            var pointSize = new SizeF(_ellipseWidth, _ellipseWidth);
-            //
-            // Rectangle
-            // 
-            var pointPoint = new PointF((Size.Width - o * 2) / 2, POINT_OFFSET);
-            var pointRect = new RectangleF(pointPoint, pointSize);
-            //
-            // Draw point to screen.
-            //
-            g.FillEllipse(pointBrush, pointRect);
-        }
-
-        private void DrawMovingRoundedPoint(Graphics g, float a)
-        {
-            // 
-            // Brush
-            //
-            var pointBrush = new SolidBrush(ForeColor);
-            // 
-            // Size
-            // 
-            var pointSize = new SizeF(_ellipseWidth, _ellipseWidth);
-            // Points
-            var ellipseRadius = (Size.Width - POINT_OFFSET * 2) / 2;
-            var pointRadius = _ellipseWidth / 2;
-            var pointAngle = a - 90F;
-            var ellipseX = GetPointX(ellipseRadius, pointAngle) + POINT_OFFSET;
-            var ellipseY = GetPointY(ellipseRadius, pointAngle) + POINT_OFFSET;
-            var pointX = GetPointX(pointRadius, pointAngle);
-            var pointY = GetPointY(pointRadius, pointAngle);
-            //
-            // Rectangle
-            //
-            var pointPoint = new PointF(ellipseX - pointX, ellipseY - pointY);
-            var pointRect = new RectangleF(pointPoint, pointSize);
-            //
-            // Draw point to screen.
-            //
-            g.FillEllipse(pointBrush, pointRect);
+            g.DrawArc(pen, rect, startAngle, sweepAngle);
         }
     }
 }
