@@ -1,0 +1,125 @@
+﻿namespace WinForms.Fluent.UI.Utilities.Classes
+{
+    /// <summary>The timer class, will execute your code in specific time frames.</summary>
+    public class Timer
+    {
+        private static Thread _timerThread;
+
+        private static readonly object LockHandle = new object();
+
+        private static readonly long StartTimeAsMs = DateTime.Now.Ticks;
+
+        private static readonly List<Timer> Subscribers = new List<Timer>();
+
+        private readonly Action<ulong> _callback;
+
+        /// <summary>Initializes a new instance of the <see cref="Timer" /> class.</summary>
+        /// <param name="callback">The callback to be executed at each tick.</param>
+        public Timer(Action<ulong> callback)
+        {
+            if (callback == null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+
+            _callback = callback;
+            
+            lock (LockHandle)
+            {
+                if (_timerThread == null)
+                {
+                    (_timerThread = new Thread(ThreadCycle) { IsBackground = true }).Start();
+                }
+            }
+        }
+
+        /// <summary>Gets the time of the last frame/tick related to the global-timer start reference.</summary>
+        private long LastTick { get; set; }
+
+        /// <summary>Gets the time of the first frame/tick related to the global-timer start reference</summary>
+        private long FirstTick { get; set; }
+
+        private void Tick()
+        {
+            // NOTE: Locked at 60 frames.
+            if (16.67 < GetTimeDifferenceAsMs() - LastTick)
+            {
+                LastTick = GetTimeDifferenceAsMs();
+                _callback((ulong)(LastTick - FirstTick));
+            }
+        }
+
+        private static long GetTimeDifferenceAsMs()
+        {
+            return (DateTime.Now.Ticks - StartTimeAsMs)/10000;
+        }
+
+        private static void ThreadCycle()
+        {
+            while (true)
+            {
+                try
+                {
+                    bool hibernate;
+                    lock (Subscribers)
+                    {
+                        hibernate = Subscribers.Count == 0;
+                        if (!hibernate)
+                        {
+                            foreach (var t in Subscribers.ToList())
+                            {
+                                t.Tick();
+                            }
+                        }
+                    }
+
+                    Thread.Sleep(hibernate ? 50 : 1);
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
+            // ReSharper disable once FunctionNeverReturns
+        }
+
+        /// <summary>The method to reset the time of the starting frame/tick.</summary>
+        public void ResetClock()
+        {
+            FirstTick = GetTimeDifferenceAsMs();
+        }
+
+        /// <summary>The method to resume the timer after stopping it</summary>
+        public void Resume()
+        {
+            lock (Subscribers)
+                if (!Subscribers.Contains(this))
+                {
+                    FirstTick += GetTimeDifferenceAsMs() - LastTick;
+                    Subscribers.Add(this);
+                }
+        }
+
+        /// <summary>The method to start the timer from the beginning</summary>
+        public void Start()
+        {
+            lock (Subscribers)
+                if (!Subscribers.Contains(this))
+                {
+                    FirstTick = GetTimeDifferenceAsMs();
+                    Subscribers.Add(this);
+                }
+        }
+
+        /// <summary>The method to stop the timer from generating any new ticks/frames</summary>
+        public void Stop()
+        {
+            lock (Subscribers)
+                if (Subscribers.Contains(this))
+                {
+                    Subscribers.Remove(this);
+                }
+        }
+    }
+}

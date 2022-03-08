@@ -32,7 +32,7 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
             var green = (byte) ((color >> 8) & 0xff);
             var blue = (byte) (color & 0xff);
 
-            return Color.FromArgb(255, red, green, blue);
+            return Color.FromArgb(alpha, red, green, blue);
         }
     }
 }
