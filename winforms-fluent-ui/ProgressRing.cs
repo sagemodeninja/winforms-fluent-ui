@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Helpers;
+using WinForms.Fluent.UI.Utilities.Structures;
 using Timer = WinForms.Fluent.UI.Utilities.Classes.Timer;
 
 namespace WinForms.Fluent.UI
@@ -16,7 +18,6 @@ namespace WinForms.Fluent.UI
         private readonly Timer _timer;
 
         private RectangleF _arcBounds;
-        private Pen _pen;
 
         private bool _isIndeterminate;
         private float _maxValue;
@@ -26,13 +27,17 @@ namespace WinForms.Fluent.UI
         private float _startAngle;
         private float _sweepAngle;
 
+        private int _displayFrequency;
+
         public ProgressRing()
         {
-            SetStyle(ControlStyles.DoubleBuffer |
-                     ControlStyles.UserPaint |
-                     ControlStyles.AllPaintingInWmPaint, true);
-
-            DoubleBuffered = true;
+            SetStyle(
+                ControlStyles.SupportsTransparentBackColor |
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.UserPaint |
+                ControlStyles.OptimizedDoubleBuffer,
+                true
+            );
 
             _value = 0;
             _maxValue = 100;
@@ -43,9 +48,14 @@ namespace WinForms.Fluent.UI
 
             _color = GraphicsHelper.GetWindowsAccentColor();
             _arcBounds = CreateArcBounds(_ellipseWidth, ClientSize);
-            _pen = CreatePen(_color, _ellipseWidth);
 
-            _timer = new Timer(TimerElapse);
+            /* NOTE: This does not return the actual refresh rate.
+             *       The nature of this code is attempt matching the display
+             *       refresh rate in order to view a smooth animation.
+             */
+            _displayFrequency = GraphicsHelper.GetDisplayFrequency();
+            Debug.WriteLine($">>{_displayFrequency}<<");
+            _timer = new Timer(TimerElapse, _displayFrequency);
         }
 
         [Category("Appearance")]
@@ -57,7 +67,6 @@ namespace WinForms.Fluent.UI
             {
                 _ellipseWidth = value;
                 _arcBounds = CreateArcBounds(_ellipseWidth, ClientSize);
-                _pen = CreatePen(_color, _ellipseWidth);
                 
                 Invalidate();
             }
@@ -116,16 +125,32 @@ namespace WinForms.Fluent.UI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            lock (this)
+            {
+                var bufferContext = new BufferedGraphicsContext();
+                var bufferedGraphics = bufferContext.Allocate(e.Graphics, ClientRectangle);
+                
+                bufferedGraphics.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                bufferedGraphics.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                bufferedGraphics.Graphics.Clear(BackColor);
 
-            // Debug lines.
-            if(DesignMode)
-                e.Graphics.DrawRectangle(Pens.Black, ClientRectangle);
+                if (DesignMode)
+                {
+                    using var guidePen = new Pen(Color.FromKnownColor(KnownColor.ControlLight), _ellipseWidth);
+                    bufferedGraphics.Graphics.DrawEllipse(guidePen, _arcBounds);
+                }
 
-            e.Graphics.DrawArc(_pen, _arcBounds, _startAngle, _sweepAngle);
-            
-            base.OnPaint(e);
+                using var pen = new Pen(_color, _ellipseWidth);
+                pen.StartCap = LineCap.Round;
+                pen.EndCap = LineCap.Round;
+                
+                bufferedGraphics.Graphics.DrawArc(pen, _arcBounds, _startAngle, _sweepAngle);
+
+                bufferedGraphics.Render();
+
+                bufferedGraphics.Dispose();
+                bufferContext.Dispose();
+            }
         }
 
         protected override void WndProc(ref Message m)
@@ -205,16 +230,6 @@ namespace WinForms.Fluent.UI
             s.Height += v;
 
             return s;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _pen.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

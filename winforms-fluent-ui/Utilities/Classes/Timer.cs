@@ -13,9 +13,11 @@
 
         private readonly Action<ulong> _callback;
 
+        private readonly int _fpsLimit;
+
         /// <summary>Initializes a new instance of the <see cref="Timer" /> class.</summary>
         /// <param name="callback">The callback to be executed at each tick.</param>
-        public Timer(Action<ulong> callback)
+        public Timer(Action<ulong> callback, int fpsLimit)
         {
             if (callback == null)
             {
@@ -23,7 +25,8 @@
             }
 
             _callback = callback;
-            
+            _fpsLimit = fpsLimit;
+
             lock (LockHandle)
             {
                 if (_timerThread == null)
@@ -41,8 +44,7 @@
 
         private void Tick()
         {
-            // NOTE: Locked at 60 frames.
-            if (16.67 < GetTimeDifferenceAsMs() - LastTick)
+            if ((1000/_fpsLimit) < GetTimeDifferenceAsMs() - LastTick)
             {
                 LastTick = GetTimeDifferenceAsMs();
                 _callback((ulong)(LastTick - FirstTick));

@@ -38,6 +38,7 @@
             // 
             // progressRing1
             // 
+            this.progressRing1.BackColor = System.Drawing.SystemColors.Control;
             this.progressRing1.EllipseWidth = 8F;
             this.progressRing1.IsIndeterminate = false;
             this.progressRing1.Location = new System.Drawing.Point(56, 50);
@@ -102,6 +103,7 @@
             this.Controls.Add(this.progressRing1);
             this.Name = "MainForm";
             this.Text = "Form1";
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.progressRingValueNud)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

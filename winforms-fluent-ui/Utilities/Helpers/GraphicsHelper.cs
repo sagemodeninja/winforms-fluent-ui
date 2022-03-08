@@ -25,6 +25,19 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
             return unchecked((short)(long)param);
         }
 
+        public static int GetDisplayFrequency()
+        {
+            var devMode = new DEVMODE();
+            var modeNum = 0;
+
+            while (WinApi.EnumDisplaySettings(null, modeNum, ref devMode))
+            {
+                modeNum++;
+            }
+
+            return devMode.dmDisplayFrequency;
+        }
+
         private static Color ParseDwmColorization(int color)
         {
             var alpha = (byte) ((color >> 24) & 0xff);

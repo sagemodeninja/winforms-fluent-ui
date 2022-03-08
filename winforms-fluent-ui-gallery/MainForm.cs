@@ -20,4 +20,8 @@ public partial class MainForm : Form
 
         progressRing1.Value = (float) progressRingValueNud.Value;
     }
+
+    private void MainForm_Shown(object sender, EventArgs e)
+    {
+    }
 }
