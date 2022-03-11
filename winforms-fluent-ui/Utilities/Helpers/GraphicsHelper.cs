@@ -50,6 +50,15 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
             return path;
         }
 
+        public static Color DarkenColor(Color color, float percent)
+        {
+            var r = (int)(color.R * percent);
+            var g = (int)(color.G * percent);
+            var b = (int)(color.B * percent);
+
+            return Color.FromArgb(255, r, g, b);
+        }
+
         #endregion
 
         #region PInvoke
@@ -65,12 +74,15 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
         }
 
         public static Color GetWindowsAccentColor()
+            => GetWindowsAccentColor(false);
+
+        public static Color GetWindowsAccentColor(bool ignoreAlpha)
         {
             var colors = new DWMCOLORIZATIONPARAMS();
             WinApi.DwmGetColorizationParameters(ref colors);
 
             return Environment.OSVersion.Version.Major >= 10
-                ? ParseDwmColorization((int) colors.ColorizationColor)
+                ? ParseDwmColorization((int) colors.ColorizationColor, ignoreAlpha)
                 : Color.CadetBlue;
         }
 
@@ -87,15 +99,14 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
             return devMode.dmDisplayFrequency;
         }
 
-        private static Color ParseDwmColorization(int color)
+        private static Color ParseDwmColorization(int color, bool ignoreAlpha)
         {
-            //var alpha = (byte) ((color >> 24) & 0xff);
-            var alpha = (byte) ((color >> 24) & 0xff);
+            var alpha = ignoreAlpha ? 255 : (byte) ((color >> 24) & 0xff);
             var red = (byte) ((color >> 16) & 0xff);
             var green = (byte) ((color >> 8) & 0xff);
             var blue = (byte) (color & 0xff);
 
-            return Color.FromArgb(255, red, green, blue);
+            return Color.FromArgb(alpha, red, green, blue);
         }
 
         #endregion

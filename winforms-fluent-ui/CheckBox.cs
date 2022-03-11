@@ -12,6 +12,7 @@ namespace WinForms.Fluent.UI
         private const float BORDER_RADIUS = 3f;
 
         private readonly Color _borderColor;
+        private readonly Color _hoveredBorderColor;
         private readonly Color _backColor;
         private readonly Color _hoveredBackColor;
         private readonly Color _accentColor;
@@ -37,13 +38,14 @@ namespace WinForms.Fluent.UI
 
             // Border color.
             _borderColor = Color.FromArgb(23, 23, 23);
+            _hoveredBorderColor = Color.FromArgb(14, 14, 14);
 
             // Back color.
             _backColor = Color.FromArgb(237, 237, 237);
             _hoveredBackColor = Color.FromArgb(229, 229, 229);
 
             // Accent color.
-            _accentColor = GraphicsHelper.GetWindowsAccentColor();
+            _accentColor = GraphicsHelper.GetWindowsAccentColor(true);
         }
 
         protected override Size DefaultSize
@@ -147,12 +149,13 @@ namespace WinForms.Fluent.UI
             var graphics = GraphicsHelper.PrimeGraphics(e);
             graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-            var borderColor = _state == CheckState.Unchecked ? _borderColor : _accentColor;
+            var borderColor = !_isHovered ? _borderColor : _hoveredBorderColor;
             var backColor = !_isHovered ? _backColor : _hoveredBackColor;
 
             if (_state != CheckState.Unchecked)
             {
-                backColor = _accentColor;
+                borderColor = GraphicsHelper.DarkenColor(_accentColor, _isHovered ? 0.94f : 0.9f);
+                backColor = GraphicsHelper.DarkenColor(_accentColor, _isHovered ? 0.94f : 0.9f);
             }
 
             var borderPen = new Pen(borderColor, 0);
@@ -179,28 +182,32 @@ namespace WinForms.Fluent.UI
                 new Point(SIZE + 4, (SIZE - textSize.Height) / 2),
                 ForeColor);
 
-            if (_state == CheckState.Unchecked)
-                return;
-            
-
-            var glyphFont = SegoeFluentIcons.CreateFont(13f, FontStyle.Bold);
-            var glyphIcon = _state switch
+            if (_state == CheckState.Checked)
             {
-                CheckState.Checked => SegoeFluentIcons.CHECK_MARK,
-                CheckState.Indeterminate => SegoeFluentIcons.CHECKBOX_INDETERMINATE,
-                _ => null
-            };
-            
-            var glyphOrigin = (int)(SIZE - 13f) / 2;
-            var glyphLocation = new Point(glyphOrigin, glyphOrigin);
-            
-            TextRenderer.DrawText(
-                graphics,
-                glyphIcon,
-                glyphFont,
-                glyphLocation,
-                Color.White,
-                TextFormatFlags.NoPadding);
+                var glyphFont = SegoeFluentIcons.CreateFont(13f, FontStyle.Bold);
+                var glyphOrigin = (int)(SIZE - 13f) / 2;
+                var glyphLocation = new Point(glyphOrigin, glyphOrigin);
+
+                TextRenderer.DrawText(
+                    graphics,
+                    SegoeFluentIcons.CHECK_MARK,
+                    glyphFont,
+                    glyphLocation,
+                    Color.White,
+                    TextFormatFlags.NoPadding);
+            }
+
+            if (_state == CheckState.Indeterminate)
+            {
+                var indicatorLocation = new Point((SIZE - 8) / 2, (SIZE - 2) / 2);
+                var indicatorSize = new Size(8, 2);
+                var indicatorRectangle = new Rectangle(indicatorLocation, indicatorSize);
+
+                var indicatorColor = Color.FromArgb(204, 255, 255, 255);
+                var indicatorBrush = new SolidBrush(indicatorColor);
+
+                graphics.FillRectangle(indicatorBrush, indicatorRectangle);
+            }
         }
 
         protected override void WndProc(ref Message m)
