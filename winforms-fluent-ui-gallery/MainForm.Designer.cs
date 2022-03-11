@@ -30,9 +30,12 @@
         {
             this.progressRing1 = new WinForms.Fluent.UI.ProgressRing();
             this.label1 = new System.Windows.Forms.Label();
-            this.progressRingIsDeterminateCheck = new System.Windows.Forms.CheckBox();
             this.progressRingValueNud = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
+            this.checkBox1 = new WinForms.Fluent.UI.CheckBox();
+            this.checkBox2 = new WinForms.Fluent.UI.CheckBox();
+            this.progressRingIsDeterminateCheck = new WinForms.Fluent.UI.CheckBox();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.progressRingValueNud)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,17 +61,6 @@
             this.label1.TabIndex = 4;
             this.label1.Text = "Progress Ring";
             // 
-            // progressRingIsDeterminateCheck
-            // 
-            this.progressRingIsDeterminateCheck.AutoSize = true;
-            this.progressRingIsDeterminateCheck.Location = new System.Drawing.Point(137, 50);
-            this.progressRingIsDeterminateCheck.Name = "progressRingIsDeterminateCheck";
-            this.progressRingIsDeterminateCheck.Size = new System.Drawing.Size(102, 19);
-            this.progressRingIsDeterminateCheck.TabIndex = 5;
-            this.progressRingIsDeterminateCheck.Text = "Is Determinate";
-            this.progressRingIsDeterminateCheck.UseVisualStyleBackColor = true;
-            this.progressRingIsDeterminateCheck.CheckedChanged += new System.EventHandler(this.progressRingIsDeterminateCheck_CheckedChanged);
-            // 
             // progressRingValueNud
             // 
             this.progressRingValueNud.Location = new System.Drawing.Point(138, 102);
@@ -91,14 +83,65 @@
             this.label2.TabIndex = 7;
             this.label2.Text = "Value:";
             // 
+            // checkBox1
+            // 
+            this.checkBox1.Checked = false;
+            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Unchecked;
+            this.checkBox1.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.checkBox1.Location = new System.Drawing.Point(345, 50);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(155, 24);
+            this.checkBox1.TabIndex = 8;
+            this.checkBox1.Text = "Two-state CheckBox";
+            this.checkBox1.ThreeState = false;
+            // 
+            // checkBox2
+            // 
+            this.checkBox2.Checked = true;
+            this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox2.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.checkBox2.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.checkBox2.Location = new System.Drawing.Point(345, 84);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(165, 24);
+            this.checkBox2.TabIndex = 9;
+            this.checkBox2.Text = "Three-state CheckBox";
+            this.checkBox2.ThreeState = true;
+            // 
+            // progressRingIsDeterminateCheck
+            // 
+            this.progressRingIsDeterminateCheck.Checked = false;
+            this.progressRingIsDeterminateCheck.CheckState = System.Windows.Forms.CheckState.Unchecked;
+            this.progressRingIsDeterminateCheck.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.progressRingIsDeterminateCheck.Location = new System.Drawing.Point(138, 50);
+            this.progressRingIsDeterminateCheck.Name = "progressRingIsDeterminateCheck";
+            this.progressRingIsDeterminateCheck.Size = new System.Drawing.Size(133, 24);
+            this.progressRingIsDeterminateCheck.TabIndex = 10;
+            this.progressRingIsDeterminateCheck.Text = "Is Indeterminate";
+            this.progressRingIsDeterminateCheck.ThreeState = false;
+            this.progressRingIsDeterminateCheck.CheckedChange += new System.EventHandler(this.ProgressRingIsDeterminateCheck_CheckedChange);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(345, 20);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(60, 15);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "CheckBox";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(243)))), ((int)(((byte)(243)))));
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.progressRingIsDeterminateCheck);
+            this.Controls.Add(this.checkBox2);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.progressRingValueNud);
-            this.Controls.Add(this.progressRingIsDeterminateCheck);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.progressRing1);
             this.Name = "MainForm";
@@ -113,8 +156,11 @@
         #endregion
         private WinForms.Fluent.UI.ProgressRing progressRing1;
         private Label label1;
-        private CheckBox progressRingIsDeterminateCheck;
         private NumericUpDown progressRingValueNud;
         private Label label2;
+        private WinForms.Fluent.UI.CheckBox checkBox1;
+        private WinForms.Fluent.UI.CheckBox checkBox2;
+        private WinForms.Fluent.UI.CheckBox progressRingIsDeterminateCheck;
+        private Label label3;
     }
 }

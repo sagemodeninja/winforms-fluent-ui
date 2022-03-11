@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Helpers;
-using WinForms.Fluent.UI.Utilities.Structures;
 using Timer = WinForms.Fluent.UI.Utilities.Classes.Timer;
 
 namespace WinForms.Fluent.UI
@@ -53,7 +52,9 @@ namespace WinForms.Fluent.UI
              *       The nature of this code is attempt matching the display
              *       refresh rate in order to view a smooth animation.
              */
-            _displayFrequency = GraphicsHelper.GetDisplayFrequency();
+            var screen = Screen.FromControl(this);
+            Debug.WriteLine($">>{screen.DeviceName}<<");
+            _displayFrequency = GraphicsHelper.GetDisplayFrequency(screen.DeviceName);
             Debug.WriteLine($">>{_displayFrequency}<<");
             _timer = new Timer(TimerElapse, _displayFrequency);
         }
@@ -129,7 +130,7 @@ namespace WinForms.Fluent.UI
             {
                 var bufferContext = new BufferedGraphicsContext();
                 var bufferedGraphics = bufferContext.Allocate(e.Graphics, ClientRectangle);
-                
+
                 bufferedGraphics.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 bufferedGraphics.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 bufferedGraphics.Graphics.Clear(BackColor);
@@ -143,7 +144,7 @@ namespace WinForms.Fluent.UI
                 using var pen = new Pen(_color, _ellipseWidth);
                 pen.StartCap = LineCap.Round;
                 pen.EndCap = LineCap.Round;
-                
+
                 bufferedGraphics.Graphics.DrawArc(pen, _arcBounds, _startAngle, _sweepAngle);
 
                 bufferedGraphics.Render();
@@ -178,6 +179,7 @@ namespace WinForms.Fluent.UI
         protected override void OnSizeChanged(EventArgs e)
         {
             _arcBounds = CreateArcBounds(_ellipseWidth, ClientSize);
+            Invalidate();
             base.OnSizeChanged(e);
         }
 

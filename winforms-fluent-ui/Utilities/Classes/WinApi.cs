@@ -8,6 +8,10 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int WM_CREATE = 0x0001;
         public const int WM_DESTROY = 0x0002;
         public const int WM_TIMER = 0x0113;
+        public const int WM_MOUSEMOVE = 0x0200;
+        public const int WM_LBUTTONDOWN = 0x0201;
+        public const int WM_LBUTTONDBLCLK = 0x0203;
+        public const int WM_MOUSELEAVE = 0x02A3;
 
         public const int ENUM_CURRENT_SETTINGS = -1;
         public const int ENUM_REGISTRY_SETTINGS = -2;

@@ -7,7 +7,7 @@ public partial class MainForm : Form
         InitializeComponent();
     }
 
-    private void progressRingIsDeterminateCheck_CheckedChanged(object sender, EventArgs e)
+    private void ProgressRingIsDeterminateCheck_CheckedChange(object sender, EventArgs e)
     {
         progressRing1.IsIndeterminate = progressRingIsDeterminateCheck.Checked;
         progressRingValueNud.Enabled = !progressRingIsDeterminateCheck.Checked;
