@@ -50,7 +50,7 @@ public class FluentForm : Form
                     leftWidth = 0,
                     rightWidth = 0,
                     bottomHeight = 0,
-                    topHeight = 1
+                    topHeight = 0
                 };
 
                 WinApi.DwmExtendFrameIntoClientArea(m.HWnd, ref margins);
@@ -61,20 +61,26 @@ public class FluentForm : Form
             // Calculate size/Remove standard frame.
             if (m.Msg == WinApi.WM_NCCALCSIZE && m.WParam != IntPtr.Zero)
             {
-                var sizeParams = (NCCALCSIZE_PARAMS) m.GetLParam(typeof(NCCALCSIZE_PARAMS));
+                // Window position.
+                var wPos = WINDOWPLACEMENT.Default;
+                WinApi.GetWindowPlacement(m.HWnd, ref wPos);
+                
+                // Border thickness.
+                var borderThickness = new RECT(0);
+                WinApi.AdjustWindowRectEx(ref borderThickness, WinApi.WS_OVERLAPPEDWINDOW & ~WinApi.WS_CAPTION, false);
 
-                sizeParams.rgrc[0].Left += 8;
-                sizeParams.rgrc[0].Right -= 8;
-                sizeParams.rgrc[0].Bottom -= 8;
+                var sizeParams = (NCCALCSIZE_PARAMS)m.GetLParam(typeof(NCCALCSIZE_PARAMS));
 
-                // Snap window on top when maximized.
-                var top = sizeParams.rgrc[0].Top;
-                if (top < -1)
-                    sizeParams.rgrc[0].Top = -1;
+                if (wPos.ShowCmd == ShowWindowCommands.ShowMaximized)
+                    sizeParams.rgrc[0].Top += Math.Abs(borderThickness.Top);
+
+                sizeParams.rgrc[0].Left += Math.Abs(borderThickness.Left);
+                sizeParams.rgrc[0].Right -= borderThickness.Right;
+                sizeParams.rgrc[0].Bottom -= borderThickness.Bottom;
 
                 var width = sizeParams.rgrc[0].Width;
                 CreateCaptionButtonBounds(width);
-                
+
                 if (_lastKnownWidth != width)
                     Invalidate();
 
@@ -108,10 +114,9 @@ public class FluentForm : Form
                         handle = true;
                         break;
                     case WinApi.HTMAXBUTTON:
-                        if (WindowState != FormWindowState.Maximized)
-                            WindowState = FormWindowState.Maximized;
-                        else
-                            WinApi.ShowWindow(m.HWnd, WinApi.SW_RESTORE);
+                        WindowState = WindowState == FormWindowState.Maximized
+                            ? FormWindowState.Normal
+                            : FormWindowState.Maximized;
 
                         handle = true;
                         break;
@@ -230,9 +235,9 @@ public class FluentForm : Form
     {
         var captionSize = new Size(CAPTION_BUTTON_WIDTH, DEFAULT_CAPTION_HEIGHT);
         
-        var minimizeLocation = new POINT(clientRight - CAPTION_BUTTON_WIDTH * 3, 1);
-        var maximizeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH * 2, 1);
-        var closeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH, 1);
+        var minimizeLocation = new POINT(clientRight - CAPTION_BUTTON_WIDTH * 3, 0);
+        var maximizeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH * 2, 0);
+        var closeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH, 0);
 
         _minimizeBounds = new Rectangle(minimizeLocation, captionSize);
         _maximizeBounds = new Rectangle(maximizeLocation, captionSize);
@@ -253,6 +258,10 @@ public class FluentForm : Form
             graphics.DrawLine(guidePen, new Point(0, DEFAULT_CAPTION_HEIGHT), new Point(ClientRectangle.Right, DEFAULT_CAPTION_HEIGHT));
             guidePen.Dispose();
         }
+
+        //graphics.DrawRectangle(Pens.Red, _minimizeBounds);
+        //graphics.DrawRectangle(Pens.Red, _maximizeBounds);
+        //graphics.DrawRectangle(Pens.Red, _closeBounds);
 
         // Caption highlight.
         var highlightColor = Color.FromArgb(233, 233, 233);

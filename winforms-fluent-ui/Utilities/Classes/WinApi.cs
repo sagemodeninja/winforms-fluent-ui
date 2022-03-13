@@ -63,10 +63,14 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT lpPaint);
 
         [DllImport("user32.dll")]
-        public static extern bool EndPaint(IntPtr hWnd, [In] ref PAINTSTRUCT lpPaint); 
+        public static extern bool EndPaint(IntPtr hWnd, [In] ref PAINTSTRUCT lpPaint);
         
-        [DllImport("user32.dll")]
-        public static extern int ShowWindow(IntPtr hWnd, uint Msg);
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl); 
+        
+        [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+        public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
         #endregion
 
@@ -98,7 +102,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
             WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 
         // Others.
-        public const int SW_RESTORE = 0x09;
+        public const int GWL_STYLE = -16;
 
         #endregion
 

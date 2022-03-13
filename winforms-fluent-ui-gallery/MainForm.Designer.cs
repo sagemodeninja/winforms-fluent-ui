@@ -89,7 +89,7 @@
             this.checkBox1.Checked = false;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Unchecked;
             this.checkBox1.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.checkBox1.Location = new System.Drawing.Point(339, 43);
+            this.checkBox1.Location = new System.Drawing.Point(339, 82);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(155, 24);
             this.checkBox1.TabIndex = 8;
@@ -102,7 +102,7 @@
             this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox2.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.checkBox2.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox2.Location = new System.Drawing.Point(339, 77);
+            this.checkBox2.Location = new System.Drawing.Point(339, 112);
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(165, 24);
             this.checkBox2.TabIndex = 9;
@@ -125,7 +125,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(339, 13);
+            this.label3.Location = new System.Drawing.Point(339, 52);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(60, 15);
             this.label3.TabIndex = 11;
@@ -146,7 +146,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(800, 853);
+            this.ClientSize = new System.Drawing.Size(800, 907);
             this.Controls.Add(this.testFormBtn);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.progressRingIsDeterminateCheck);
