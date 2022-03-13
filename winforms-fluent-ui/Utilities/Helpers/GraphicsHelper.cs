@@ -50,6 +50,11 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
             return path;
         }
 
+        public static Point GetCursorPosition(IntPtr lParam)
+        {
+            return new Point(GetLowWord(lParam), GetHighWord(lParam));
+        }
+
         public static Color DarkenColor(Color color, float percent)
         {
             var r = (int)(color.R * percent);
@@ -84,19 +89,6 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
             return Environment.OSVersion.Version.Major >= 10
                 ? ParseDwmColorization((int) colors.ColorizationColor, ignoreAlpha)
                 : Color.CadetBlue;
-        }
-
-        public static int GetDisplayFrequency(string displayName)
-        {
-            var devMode = new DEVMODE();
-            var modeNum = 0;
-
-            while (WinApi.EnumDisplaySettings(displayName, modeNum, ref devMode))
-            {
-                modeNum++;
-            }
-
-            return devMode.dmDisplayFrequency;
         }
 
         private static Color ParseDwmColorization(int color, bool ignoreAlpha)

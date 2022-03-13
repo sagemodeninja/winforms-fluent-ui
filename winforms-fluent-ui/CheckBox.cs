@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using WinForms.Fluent.UI.Utilities.Classes;
@@ -58,7 +59,7 @@ namespace WinForms.Fluent.UI
 
             if (!string.IsNullOrEmpty(Text))
             {
-                using var g = this.CreateGraphics();
+                using var g = CreateGraphics();
                 var textSize = TextRenderer.MeasureText(g, Text, Font);
 
                 maxWidth += 8 + textSize.Width;
@@ -146,6 +147,8 @@ namespace WinForms.Fluent.UI
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            base.OnPaint(e);
+
             var graphics = GraphicsHelper.PrimeGraphics(e);
             graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
@@ -195,6 +198,8 @@ namespace WinForms.Fluent.UI
                     glyphLocation,
                     Color.White,
                     TextFormatFlags.NoPadding);
+
+                glyphFont.Dispose();
             }
 
             if (_state == CheckState.Indeterminate)
@@ -207,7 +212,13 @@ namespace WinForms.Fluent.UI
                 var indicatorBrush = new SolidBrush(indicatorColor);
 
                 graphics.FillRectangle(indicatorBrush, indicatorRectangle);
+
+                indicatorBrush.Dispose();
             }
+
+            // Cleanup.
+            borderPen.Dispose();
+            baseBrush.Dispose();
         }
 
         protected override void WndProc(ref Message m)

@@ -1,6 +1,8 @@
+using WinForms.Fluent.UI;
+
 namespace winforms_fluent_ui_gallery;
 
-public partial class MainForm : Form
+public partial class MainForm : FluentForm
 {
     public MainForm()
     {
@@ -23,5 +25,16 @@ public partial class MainForm : Form
 
     private void MainForm_Shown(object sender, EventArgs e)
     {
+    }
+
+    private void MainForm_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    private void testFormBtn_Click(object sender, EventArgs e)
+    {
+        var form = new TestForm();
+        form.Show();
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Helpers;
@@ -26,8 +25,6 @@ namespace WinForms.Fluent.UI
         private float _startAngle;
         private float _sweepAngle;
 
-        private int _displayFrequency;
-
         public ProgressRing()
         {
             SetStyle(
@@ -48,15 +45,7 @@ namespace WinForms.Fluent.UI
             _color = GraphicsHelper.GetWindowsAccentColor();
             _arcBounds = CreateArcBounds(_ellipseWidth, ClientSize);
 
-            /* NOTE: This does not return the actual refresh rate.
-             *       The nature of this code is attempt matching the display
-             *       refresh rate in order to view a smooth animation.
-             */
-            var screen = Screen.FromControl(this);
-            Debug.WriteLine($">>{screen.DeviceName}<<");
-            _displayFrequency = GraphicsHelper.GetDisplayFrequency(screen.DeviceName);
-            Debug.WriteLine($">>{_displayFrequency}<<");
-            _timer = new Timer(TimerElapse, _displayFrequency);
+            _timer = new Timer(TimerElapse, 144);
         }
 
         [Category("Appearance")]
