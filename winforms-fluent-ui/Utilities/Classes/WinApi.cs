@@ -67,10 +67,14 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl); 
-        
-        [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
         public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+        // NOTE: Only supports 64-bit.
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
+        public static extern IntPtr SetWindowLongPtr(HandleRef hWnd, int nIndex, IntPtr dwNewLong);
 
         #endregion
 

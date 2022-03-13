@@ -7,6 +7,7 @@ public partial class MainForm : FluentForm
     public MainForm()
     {
         InitializeComponent();
+        //DoubleBuffered = true;
     }
 
     private void ProgressRingIsDeterminateCheck_CheckedChange(object sender, EventArgs e)

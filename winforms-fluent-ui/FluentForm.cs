@@ -19,9 +19,16 @@ public class FluentForm : Form
     private Rectangle _maximizeBounds;
     private Rectangle _closeBounds;
 
+    private Color _osAccentColor;
+
     private int _lastKnownHitResult;
     private int _lastKnownWidth;
 
+    public FluentForm()
+    {
+        _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
+    }
+    
     protected override void WndProc(ref Message m)
     {
         if (WinApi.DwmIsCompositionEnabled())
@@ -29,6 +36,11 @@ public class FluentForm : Form
             // Creation/Trigger WM_NCCALCSIZE.
             if (m.Msg == WinApi.WM_CREATE)
             {
+                // Remove border?
+                //var lStyle = (int)WinApi.GetWindowLongPtr(m.HWnd, WinApi.GWL_STYLE);
+                //lStyle &= ~(WinApi.WS_CAPTION | WinApi.WS_THICKFRAME | WinApi.WS_MINIMIZEBOX | WinApi.WS_MAXIMIZEBOX | WinApi.WS_SYSMENU);
+                //WinApi.SetWindowLongPtr(new HandleRef(this, m.HWnd), WinApi.GWL_STYLE, (IntPtr)lStyle);
+
                 WinApi.GetWindowRect(m.HWnd, out var rect);
 
                 WinApi.SetWindowPos(m.HWnd,
@@ -38,6 +50,7 @@ public class FluentForm : Form
                     rect.Width,
                     rect.Height,
                     SetWindowPos.FrameChanged);
+                //SetWindowPos.FrameChanged | SetWindowPos.NoMove | SetWindowPos.NoSize | SetWindowPos.NoZOrder | SetWindowPos.NoOwnerZOrder);
 
                 m.Result = IntPtr.Zero;
             }
@@ -64,19 +77,15 @@ public class FluentForm : Form
                 // Window position.
                 var wPos = WINDOWPLACEMENT.Default;
                 WinApi.GetWindowPlacement(m.HWnd, ref wPos);
-                
-                // Border thickness.
-                var borderThickness = new RECT(0);
-                WinApi.AdjustWindowRectEx(ref borderThickness, WinApi.WS_OVERLAPPEDWINDOW & ~WinApi.WS_CAPTION, false);
 
                 var sizeParams = (NCCALCSIZE_PARAMS)m.GetLParam(typeof(NCCALCSIZE_PARAMS));
 
                 if (wPos.ShowCmd == ShowWindowCommands.ShowMaximized)
-                    sizeParams.rgrc[0].Top += Math.Abs(borderThickness.Top);
-
-                sizeParams.rgrc[0].Left += Math.Abs(borderThickness.Left);
-                sizeParams.rgrc[0].Right -= borderThickness.Right;
-                sizeParams.rgrc[0].Bottom -= borderThickness.Bottom;
+                    sizeParams.rgrc[0].Top += 8;
+                
+                sizeParams.rgrc[0].Left += 8;
+                sizeParams.rgrc[0].Right -= 8;
+                sizeParams.rgrc[0].Bottom -= 8;
 
                 var width = sizeParams.rgrc[0].Width;
                 CreateCaptionButtonBounds(width);
@@ -96,7 +105,7 @@ public class FluentForm : Form
             if (m.Msg == WinApi.WM_PAINT)
             {
                 WinApi.BeginPaint(m.HWnd, out var paintStruct);
-                
+
                 PaintCustomCaption();
 
                 WinApi.EndPaint(m.HWnd, ref paintStruct);
@@ -189,8 +198,12 @@ public class FluentForm : Form
 
                 if (hitResult != 0)
                 {
-                    if(_lastKnownHitResult != hitResult)
-                        Invalidate();
+                    if (_lastKnownHitResult != hitResult)
+                    {
+                        var paintBounds = new Rectangle(_minimizeBounds.Left, 3,
+                            _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT);
+                        Invalidate(paintBounds);
+                    }
 
                     _lastKnownHitResult = hitResult;
                     return hitResult;
@@ -247,14 +260,22 @@ public class FluentForm : Form
     private void PaintCustomCaption()
     {
         var graphics = CreateGraphics();
-        
+
         graphics.FillRectangle(Brushes.White, new Rectangle(Point.Empty, new Size(ClientRectangle.Width, DEFAULT_CAPTION_HEIGHT)));
+
+        //var osBuild = Environment.OSVersion.Version.Build;
+        //if (osBuild >= 2200) // Note: Windows 11 build no starts @ 2200.
+        //{
+        //    var borderPen = new Pen(_osAccentColor, 1);
+        //    var borderY = DesignMode ? 0 : 2;
+        //    graphics.DrawLine(borderPen, 0, borderY, ClientRectangle.Right, borderY);
+        //}
 
         if (DesignMode)
         {
             var guidePen = new Pen(Color.LightGray, 1);
             guidePen.DashStyle = DashStyle.Dash;
-            
+
             graphics.DrawLine(guidePen, new Point(0, DEFAULT_CAPTION_HEIGHT), new Point(ClientRectangle.Right, DEFAULT_CAPTION_HEIGHT));
             guidePen.Dispose();
         }
@@ -295,7 +316,7 @@ public class FluentForm : Form
         var minimizeGlyphLocation = new Point(minimizeOffset, glyphYOffset);
         var maximizeGlyphLocation = new Point(maximizeOffset, glyphYOffset);
         var closeGlyphLocation = new Point(closeOffset, glyphYOffset);
-        
+
         TextRenderer.DrawText(graphics,
             SegoeFluentIcons.CHROME_MINIMIZE,
             glyphFont,
