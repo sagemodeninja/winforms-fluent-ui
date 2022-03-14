@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Enums;
 using WinForms.Fluent.UI.Utilities.Helpers;
@@ -24,11 +25,11 @@ public class FluentForm : Form
     private int _lastKnownHitResult;
     private int _lastKnownWidth;
 
-    public FluentForm()
+    protected FluentForm()
     {
         _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
     }
-    
+
     protected override void WndProc(ref Message m)
     {
         if (WinApi.DwmIsCompositionEnabled())
@@ -36,11 +37,6 @@ public class FluentForm : Form
             // Creation/Trigger WM_NCCALCSIZE.
             if (m.Msg == WinApi.WM_CREATE)
             {
-                // Remove border?
-                //var lStyle = (int)WinApi.GetWindowLongPtr(m.HWnd, WinApi.GWL_STYLE);
-                //lStyle &= ~(WinApi.WS_CAPTION | WinApi.WS_THICKFRAME | WinApi.WS_MINIMIZEBOX | WinApi.WS_MAXIMIZEBOX | WinApi.WS_SYSMENU);
-                //WinApi.SetWindowLongPtr(new HandleRef(this, m.HWnd), WinApi.GWL_STYLE, (IntPtr)lStyle);
-
                 WinApi.GetWindowRect(m.HWnd, out var rect);
 
                 WinApi.SetWindowPos(m.HWnd,
@@ -49,8 +45,7 @@ public class FluentForm : Form
                     rect.Top,
                     rect.Width,
                     rect.Height,
-                    SetWindowPos.FrameChanged);
-                //SetWindowPos.FrameChanged | SetWindowPos.NoMove | SetWindowPos.NoSize | SetWindowPos.NoZOrder | SetWindowPos.NoOwnerZOrder);
+                SetWindowPos.FrameChanged);
 
                 m.Result = IntPtr.Zero;
             }
@@ -70,7 +65,7 @@ public class FluentForm : Form
 
                 m.Result = IntPtr.Zero;
             }
-            
+
             // Calculate size/Remove standard frame.
             if (m.Msg == WinApi.WM_NCCALCSIZE && m.WParam != IntPtr.Zero)
             {
@@ -82,7 +77,7 @@ public class FluentForm : Form
 
                 if (wPos.ShowCmd == ShowWindowCommands.ShowMaximized)
                     sizeParams.rgrc[0].Top += 8;
-                
+
                 sizeParams.rgrc[0].Left += 8;
                 sizeParams.rgrc[0].Right -= 8;
                 sizeParams.rgrc[0].Bottom -= 8;
@@ -115,7 +110,7 @@ public class FluentForm : Form
             if (m.Msg == WinApi.WM_NCLBUTTONDOWN)
             {
                 var handle = false;
-                
+
                 switch ((int)m.WParam)
                 {
                     case WinApi.HTMINBUTTON:
@@ -159,6 +154,13 @@ public class FluentForm : Form
                 if (hitResult != WinApi.HTNOWHERE)
                     return;
             }
+
+            // Settings changed.
+            const int WM_SETTINGCHANGE = 0x001A;
+            if (m.Msg == WM_SETTINGCHANGE)
+            {
+                Invalidate();
+            }
         }
 
         base.WndProc(ref m);
@@ -170,7 +172,7 @@ public class FluentForm : Form
         var column = 1;
         var isOnResizeBorder = false;
         var rcFrame = new RECT(0);
-        
+
         // Bounds.
         var cursorPosition = GraphicsHelper.GetCursorPosition(lParam);
         WinApi.GetWindowRect(handle, out var rcWindow);
@@ -200,8 +202,9 @@ public class FluentForm : Form
                 {
                     if (_lastKnownHitResult != hitResult)
                     {
-                        var paintBounds = new Rectangle(_minimizeBounds.Left, 3,
-                            _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT);
+                        var yOffset = Environment.OSVersion.Version.Build < 22000 ? 1 : 0;
+                        var paintBounds = new Rectangle(_minimizeBounds.Left, yOffset,
+                            _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT - yOffset);
                         Invalidate(paintBounds);
                     }
 
@@ -238,7 +241,9 @@ public class FluentForm : Form
         if (_lastKnownHitResult != 0)
         {
             _lastKnownHitResult = 0;
-            Invalidate();
+            var paintBounds = new Rectangle(_minimizeBounds.Left, 0,
+                _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT);
+            Invalidate(paintBounds);
         }
 
         return hitTestGrid[row, column];
@@ -246,11 +251,12 @@ public class FluentForm : Form
 
     private void CreateCaptionButtonBounds(int clientRight)
     {
-        var captionSize = new Size(CAPTION_BUTTON_WIDTH, DEFAULT_CAPTION_HEIGHT);
-        
-        var minimizeLocation = new POINT(clientRight - CAPTION_BUTTON_WIDTH * 3, 0);
-        var maximizeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH * 2, 0);
-        var closeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH, 0);
+        var yOffset = Environment.OSVersion.Version.Build < 22000 ? 1 : 0;
+        var captionSize = new Size(CAPTION_BUTTON_WIDTH, DEFAULT_CAPTION_HEIGHT - yOffset);
+
+        var minimizeLocation = new POINT(clientRight - CAPTION_BUTTON_WIDTH * 3, yOffset);
+        var maximizeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH * 2, yOffset);
+        var closeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH, yOffset);
 
         _minimizeBounds = new Rectangle(minimizeLocation, captionSize);
         _maximizeBounds = new Rectangle(maximizeLocation, captionSize);
@@ -260,16 +266,31 @@ public class FluentForm : Form
     private void PaintCustomCaption()
     {
         var graphics = CreateGraphics();
+        
+        var paintBounds = new Rectangle(_minimizeBounds.Left, 0,
+            _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT);
+        var brush = new SolidBrush(BackColor);
+        graphics.FillRectangle(brush, paintBounds);
+        brush.Dispose();
+        
+        // Note: Windows 11 build no starts @ 22000.
+        if (Environment.OSVersion.Version.Build < 22000)
+        {
+            var colorPrevalence = 0;
+            var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+            if (windowsDwmSettings != null)
+            {
+                colorPrevalence = (int)(windowsDwmSettings.GetValue("ColorPrevalence") ?? 0);
+                windowsDwmSettings.Close();
+            }
 
-        graphics.FillRectangle(Brushes.White, new Rectangle(Point.Empty, new Size(ClientRectangle.Width, DEFAULT_CAPTION_HEIGHT)));
+            // Top border.
+            var borderColor = colorPrevalence == 0 ? Color.FromArgb(100, 100, 100) : _osAccentColor;
+            var borderPen = new Pen(borderColor, 1);
 
-        //var osBuild = Environment.OSVersion.Version.Build;
-        //if (osBuild >= 2200) // Note: Windows 11 build no starts @ 2200.
-        //{
-        //    var borderPen = new Pen(_osAccentColor, 1);
-        //    var borderY = DesignMode ? 0 : 2;
-        //    graphics.DrawLine(borderPen, 0, borderY, ClientRectangle.Right, borderY);
-        //}
+            graphics.DrawLine(borderPen, 0, 0, ClientRectangle.Right, 0);
+            borderPen.Dispose();
+        }
 
         if (DesignMode)
         {

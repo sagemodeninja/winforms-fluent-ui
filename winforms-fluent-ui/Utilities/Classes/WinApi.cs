@@ -41,7 +41,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
-        
+
         // User 32.
         [DllImport("user32.dll", ExactSpelling = true)]
         public static extern IntPtr SetTimer(IntPtr hWnd, IntPtr nIDEvent, uint uElapse, IntPtr lpTimerFunc);
@@ -58,13 +58,13 @@ namespace WinForms.Fluent.UI.Utilities.Classes
 
         [DllImport("user32.dll")]
         public static extern bool AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu);
-        
+
         [DllImport("user32.dll")]
         public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT lpPaint);
 
         [DllImport("user32.dll")]
         public static extern bool EndPaint(IntPtr hWnd, [In] ref PAINTSTRUCT lpPaint);
-        
+
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
@@ -72,9 +72,11 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
         public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
-        // NOTE: Only supports 64-bit.
+        [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
+        private static extern int SetWindowLong32(HandleRef hWnd, int nIndex, int dwNewLong);
+
         [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
-        public static extern IntPtr SetWindowLongPtr(HandleRef hWnd, int nIndex, IntPtr dwNewLong);
+        private static extern IntPtr SetWindowLongPtr64(HandleRef hWnd, int nIndex, IntPtr dwNewLong);
 
         #endregion
 
@@ -107,6 +109,11 @@ namespace WinForms.Fluent.UI.Utilities.Classes
 
         // Others.
         public const int GWL_STYLE = -16;
+        public const int GWL_EXSTYLE = -20;
+        public const long WS_BORDER = 0x00800000L;
+        public const long WS_EX_DLGMODALFRAME = 0x00000001L;
+        public const long WS_EX_CLIENTEDGE = 0x00000200L;
+        public const long WS_EX_STATICEDGE = 0x00020000L;
 
         #endregion
 
@@ -116,6 +123,14 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         {
             var result = DwmIsCompositionEnabled(out var enabled);
             return result == 0 && enabled;
+        }
+
+        public static IntPtr SetWindowLongPtr(HandleRef hWnd, int nIndex, IntPtr dwNewLong)
+        {
+            if (IntPtr.Size == 8)
+                return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
+            else
+                return new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
         }
 
         #endregion
