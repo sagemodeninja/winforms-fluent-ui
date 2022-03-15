@@ -24,6 +24,8 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int WM_NCCALCSIZE = 0x0083;
         public const int WM_NCHITTEST = 0x0084;
         public const int WM_NCLBUTTONDOWN = 0x00A1;
+        public const int WM_SETTINGCHANGE = 0x001A;
+        public const int WM_NCACTIVATE = 0x0086;
 
         #endregion
 
@@ -69,9 +71,6 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
-        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
-        public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
-
         [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
         private static extern int SetWindowLong32(HandleRef hWnd, int nIndex, int dwNewLong);
 
@@ -108,12 +107,6 @@ namespace WinForms.Fluent.UI.Utilities.Classes
             WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 
         // Others.
-        public const int GWL_STYLE = -16;
-        public const int GWL_EXSTYLE = -20;
-        public const long WS_BORDER = 0x00800000L;
-        public const long WS_EX_DLGMODALFRAME = 0x00000001L;
-        public const long WS_EX_CLIENTEDGE = 0x00000200L;
-        public const long WS_EX_STATICEDGE = 0x00020000L;
 
         #endregion
 
@@ -123,14 +116,6 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         {
             var result = DwmIsCompositionEnabled(out var enabled);
             return result == 0 && enabled;
-        }
-
-        public static IntPtr SetWindowLongPtr(HandleRef hWnd, int nIndex, IntPtr dwNewLong)
-        {
-            if (IntPtr.Size == 8)
-                return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
-            else
-                return new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
         }
 
         #endregion

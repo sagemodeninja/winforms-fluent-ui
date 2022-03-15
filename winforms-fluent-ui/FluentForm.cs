@@ -16,6 +16,11 @@ public class FluentForm : Form
     private const int CAPTION_BUTTON_WIDTH = 46;
     private const int CAPTION_ICON_SIZE = 10;
 
+    private readonly bool _isOsWin10;
+    private readonly Color _defaultActiveBorderColor;
+    private readonly Color _defaultInactiveBorderColor;
+
+    private Rectangle _captionBounds;
     private Rectangle _minimizeBounds;
     private Rectangle _maximizeBounds;
     private Rectangle _closeBounds;
@@ -24,10 +29,29 @@ public class FluentForm : Form
 
     private int _lastKnownHitResult;
     private int _lastKnownWidth;
+    private int _topBorderOffset;
+    private bool _isColorPrevalent;
+    private bool _formIsActive;
 
     protected FluentForm()
     {
+        // Note: Windows 11 build no starts @ 22000.
+        _isOsWin10 = Environment.OSVersion.Version.Build < 22000;
+
+        // Default border colors.
+        _defaultActiveBorderColor = Color.FromArgb(112, 112, 112);
+        _defaultInactiveBorderColor = Color.FromArgb(170, 170, 170);
+
+        // Color prevalence settings.
+        var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+        if (windowsDwmSettings != null)
+        {
+            _isColorPrevalent = (int)(windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
+            windowsDwmSettings.Close();
+        }
+
         _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
+        _formIsActive = true;
     }
 
     protected override void WndProc(ref Message m)
@@ -73,14 +97,17 @@ public class FluentForm : Form
                 var wPos = WINDOWPLACEMENT.Default;
                 WinApi.GetWindowPlacement(m.HWnd, ref wPos);
 
+                var isMaximized = wPos.ShowCmd == ShowWindowCommands.ShowMaximized;
                 var sizeParams = (NCCALCSIZE_PARAMS)m.GetLParam(typeof(NCCALCSIZE_PARAMS));
 
-                if (wPos.ShowCmd == ShowWindowCommands.ShowMaximized)
+                if (isMaximized)
                     sizeParams.rgrc[0].Top += 8;
 
                 sizeParams.rgrc[0].Left += 8;
                 sizeParams.rgrc[0].Right -= 8;
                 sizeParams.rgrc[0].Bottom -= 8;
+                
+                _topBorderOffset = _isOsWin10 && !isMaximized ? 1 : 0;
 
                 var width = sizeParams.rgrc[0].Width;
                 CreateCaptionButtonBounds(width);
@@ -156,9 +183,22 @@ public class FluentForm : Form
             }
 
             // Settings changed.
-            const int WM_SETTINGCHANGE = 0x001A;
-            if (m.Msg == WM_SETTINGCHANGE)
+            if (m.Msg == WinApi.WM_SETTINGCHANGE)
             {
+                var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+                if (windowsDwmSettings != null)
+                {
+                    _isColorPrevalent = (int)(windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
+                    windowsDwmSettings.Close();
+                }
+                _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
+                Invalidate();
+            }
+
+            // Window active state.
+            if (m.Msg == WinApi.WM_NCACTIVATE && _isOsWin10)
+            {
+                _formIsActive = m.WParam != IntPtr.Zero;
                 Invalidate();
             }
         }
@@ -189,10 +229,10 @@ public class FluentForm : Form
                 var cursorLocalPosition = PointToClient(cursorPosition);
                 var hitResult = 0;
 
-                if (_minimizeBounds.Contains(cursorLocalPosition))
+                if (_minimizeBounds.Contains(cursorLocalPosition) && MinimizeBox)
                     hitResult = WinApi.HTMINBUTTON;
 
-                if (_maximizeBounds.Contains(cursorLocalPosition))
+                if (_maximizeBounds.Contains(cursorLocalPosition) && MaximizeBox)
                     hitResult = WinApi.HTMAXBUTTON;
 
                 if (_closeBounds.Contains(cursorLocalPosition))
@@ -201,12 +241,7 @@ public class FluentForm : Form
                 if (hitResult != 0)
                 {
                     if (_lastKnownHitResult != hitResult)
-                    {
-                        var yOffset = Environment.OSVersion.Version.Build < 22000 ? 1 : 0;
-                        var paintBounds = new Rectangle(_minimizeBounds.Left, yOffset,
-                            _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT - yOffset);
-                        Invalidate(paintBounds);
-                    }
+                        Invalidate(_captionBounds);
 
                     _lastKnownHitResult = hitResult;
                     return hitResult;
@@ -241,9 +276,7 @@ public class FluentForm : Form
         if (_lastKnownHitResult != 0)
         {
             _lastKnownHitResult = 0;
-            var paintBounds = new Rectangle(_minimizeBounds.Left, 0,
-                _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT);
-            Invalidate(paintBounds);
+            Invalidate(_captionBounds);
         }
 
         return hitTestGrid[row, column];
@@ -251,13 +284,14 @@ public class FluentForm : Form
 
     private void CreateCaptionButtonBounds(int clientRight)
     {
-        var yOffset = Environment.OSVersion.Version.Build < 22000 ? 1 : 0;
-        var captionSize = new Size(CAPTION_BUTTON_WIDTH, DEFAULT_CAPTION_HEIGHT - yOffset);
+        var captionSize = new Size(CAPTION_BUTTON_WIDTH, DEFAULT_CAPTION_HEIGHT - _topBorderOffset);
 
-        var minimizeLocation = new POINT(clientRight - CAPTION_BUTTON_WIDTH * 3, yOffset);
-        var maximizeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH * 2, yOffset);
-        var closeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH, yOffset);
+        var minimizeLocation = new POINT(clientRight - CAPTION_BUTTON_WIDTH * 3, _topBorderOffset);
+        var maximizeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH * 2, _topBorderOffset);
+        var closeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH, _topBorderOffset);
 
+        _captionBounds = new Rectangle(minimizeLocation.X, _topBorderOffset,
+            clientRight, captionSize.Height);
         _minimizeBounds = new Rectangle(minimizeLocation, captionSize);
         _maximizeBounds = new Rectangle(maximizeLocation, captionSize);
         _closeBounds = new Rectangle(closeLocation, captionSize);
@@ -267,31 +301,25 @@ public class FluentForm : Form
     {
         var graphics = CreateGraphics();
         
-        var paintBounds = new Rectangle(_minimizeBounds.Left, 0,
-            _closeBounds.Right - _minimizeBounds.Left, DEFAULT_CAPTION_HEIGHT);
-        var brush = new SolidBrush(BackColor);
-        graphics.FillRectangle(brush, paintBounds);
-        brush.Dispose();
-        
-        // Note: Windows 11 build no starts @ 22000.
-        if (Environment.OSVersion.Version.Build < 22000)
-        {
-            var colorPrevalence = 0;
-            var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
-            if (windowsDwmSettings != null)
-            {
-                colorPrevalence = (int)(windowsDwmSettings.GetValue("ColorPrevalence") ?? 0);
-                windowsDwmSettings.Close();
-            }
+        // Draw background for caption buttons.
+        var backgroundBrush = new SolidBrush(BackColor);
+        graphics.FillRectangle(backgroundBrush, _captionBounds);
 
-            // Top border.
-            var borderColor = colorPrevalence == 0 ? Color.FromArgb(100, 100, 100) : _osAccentColor;
+        // Draw top border for Windows 10 devices.
+        if (_isOsWin10 && WindowState != FormWindowState.Maximized)
+        {
+            var borderColor = !_isColorPrevalent ? _defaultActiveBorderColor : _osAccentColor;
+
+            if (!_formIsActive)
+                borderColor = _defaultInactiveBorderColor;
+
             var borderPen = new Pen(borderColor, 1);
 
             graphics.DrawLine(borderPen, 0, 0, ClientRectangle.Right, 0);
             borderPen.Dispose();
         }
 
+        // Guide line for title bar boundaries during design.
         if (DesignMode)
         {
             var guidePen = new Pen(Color.LightGray, 1);
@@ -300,10 +328,6 @@ public class FluentForm : Form
             graphics.DrawLine(guidePen, new Point(0, DEFAULT_CAPTION_HEIGHT), new Point(ClientRectangle.Right, DEFAULT_CAPTION_HEIGHT));
             guidePen.Dispose();
         }
-
-        //graphics.DrawRectangle(Pens.Red, _minimizeBounds);
-        //graphics.DrawRectangle(Pens.Red, _maximizeBounds);
-        //graphics.DrawRectangle(Pens.Red, _closeBounds);
 
         // Caption highlight.
         var highlightColor = Color.FromArgb(233, 233, 233);
@@ -325,8 +349,10 @@ public class FluentForm : Form
                 break;
         }
 
+        // Caption button icons.
         var glyphFont = SegoeFluentIcons.CreateFont(CAPTION_ICON_SIZE);
         var glyphColor = Color.FromArgb(23, 23, 23);
+        var disabledGlyphColor = Color.FromArgb(199, 192, 192);
 
         var glyphXOffset = (CAPTION_BUTTON_WIDTH - CAPTION_ICON_SIZE) / 2;
         var glyphYOffset = (DEFAULT_CAPTION_HEIGHT - CAPTION_ICON_SIZE) / 2;
@@ -337,33 +363,35 @@ public class FluentForm : Form
         var minimizeGlyphLocation = new Point(minimizeOffset, glyphYOffset);
         var maximizeGlyphLocation = new Point(maximizeOffset, glyphYOffset);
         var closeGlyphLocation = new Point(closeOffset, glyphYOffset);
+        
+        if(MinimizeBox || MaximizeBox)
+        {
+            TextRenderer.DrawText(graphics,
+                SegoeFluentIcons.CHROME_MINIMIZE,
+                glyphFont,
+                minimizeGlyphLocation,
+                MinimizeBox ? glyphColor : disabledGlyphColor,
+                TextFormatFlags.NoPadding);
 
-        TextRenderer.DrawText(graphics,
-            SegoeFluentIcons.CHROME_MINIMIZE,
-            glyphFont,
-            minimizeGlyphLocation,
-            glyphColor,
-            TextFormatFlags.NoPadding);
-
-        TextRenderer.DrawText(graphics,
-            WindowState == FormWindowState.Maximized ? SegoeFluentIcons.CHROME_RESTORE : SegoeFluentIcons.CHROME_MAXIMIZE,
-            glyphFont,
-            maximizeGlyphLocation,
-            glyphColor,
-            TextFormatFlags.NoPadding);
-
-        // Change color for highlighted close button.
-        if (_lastKnownHitResult == WinApi.HTCLOSE)
-            glyphColor = Color.White;
+            TextRenderer.DrawText(graphics,
+                WindowState == FormWindowState.Maximized
+                    ? SegoeFluentIcons.CHROME_RESTORE
+                    : SegoeFluentIcons.CHROME_MAXIMIZE,
+                glyphFont,
+                maximizeGlyphLocation,
+                MaximizeBox ? glyphColor : disabledGlyphColor,
+                TextFormatFlags.NoPadding);
+        }
 
         TextRenderer.DrawText(graphics,
             SegoeFluentIcons.CHROME_CLOSE,
             glyphFont,
             closeGlyphLocation,
-            glyphColor,
+            _lastKnownHitResult != WinApi.HTCLOSE ? glyphColor : Color.White,
             TextFormatFlags.NoPadding);
 
         // Cleanup.
+        backgroundBrush.Dispose();
         highlightBrush.Dispose();
         glyphFont.Dispose();
         graphics.Dispose();

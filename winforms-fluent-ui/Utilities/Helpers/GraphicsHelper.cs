@@ -64,6 +64,20 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
             return Color.FromArgb(255, r, g, b);
         }
 
+        public static Color RegistryToColor(object? value)
+        {
+            var stringValue = value?.ToString();
+
+            if (string.IsNullOrEmpty(stringValue))
+                return Color.Red;
+
+            var colors = stringValue.Split(' ')
+                                    .Select(int.Parse)
+                                    .ToArray();
+
+            return Color.FromArgb(colors[0], colors[1], colors[2]);
+        }
+
         #endregion
 
         #region PInvoke
