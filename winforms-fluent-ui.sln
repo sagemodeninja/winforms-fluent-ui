@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "winforms-fluent-ui", "winforms-fluent-ui\winforms-fluent-ui.csproj", "{6D6F76B3-A723-4410-A3E1-62ACC1E3D767}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "winforms-fluent-ui", "src\winforms-fluent-ui\winforms-fluent-ui.csproj", "{6D6F76B3-A723-4410-A3E1-62ACC1E3D767}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "winforms-fluent-ui-gallery", "winforms-fluent-ui-gallery\winforms-fluent-ui-gallery.csproj", "{974785EF-48C3-4A80-BFA9-1BEC19770649}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "winforms-fluent-ui-gallery", "src\winforms-fluent-ui-gallery\winforms-fluent-ui-gallery.csproj", "{974785EF-48C3-4A80-BFA9-1BEC19770649}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2573E23E-D387-476B-9DE2-75C3C1F41DA4}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.md = LICENSE.md
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

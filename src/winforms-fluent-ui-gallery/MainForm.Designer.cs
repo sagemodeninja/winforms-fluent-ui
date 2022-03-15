@@ -146,7 +146,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(800, 1000);
+            this.ClientSize = new System.Drawing.Size(806, 521);
             this.Controls.Add(this.testFormBtn);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.progressRingIsDeterminateCheck);
@@ -156,7 +156,6 @@
             this.Controls.Add(this.progressRingValueNud);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.progressRing1);
-            this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
