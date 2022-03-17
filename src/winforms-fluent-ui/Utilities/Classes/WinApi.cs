@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using WinForms.Fluent.UI.Utilities.Enums;
 using WinForms.Fluent.UI.Utilities.Structures;
 
 // ReSharper disable IdentifierTypo
@@ -10,7 +11,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
     public static class WinApi
     {
         #region WINDOW MESSAGES
-
+        
         public const int WM_CREATE = 0x0001;
         public const int WM_DESTROY = 0x0002;
         public const int WM_PAINT = 0x000f;
@@ -24,7 +25,6 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int WM_NCLBUTTONDOWN = 0x00A1;
         public const int WM_SETTINGCHANGE = 0x001A;
         public const int WM_NCACTIVATE = 0x0086;
-        public const int WM_WINDOWPOSCHANGING = 0x0046;
 
         #endregion
 
@@ -44,6 +44,9 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         [DllImport("user32.dll", ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool KillTimer(IntPtr hWnd, IntPtr uIDEvent);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPos u);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
@@ -81,6 +84,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int HTCLOSE = 20;
 
         // Window styles.
+        public const long WS_BORDER = 0x00800000L;
         public const int WS_OVERLAPPED = 0x00000000;
         public const int WS_CAPTION = 0x00C00000;
         public const int WS_SYSMENU = 0x00080000;

@@ -133,7 +133,7 @@
             // 
             // testFormBtn
             // 
-            this.testFormBtn.Location = new System.Drawing.Point(209, 339);
+            this.testFormBtn.Location = new System.Drawing.Point(201, 250);
             this.testFormBtn.Name = "testFormBtn";
             this.testFormBtn.Size = new System.Drawing.Size(112, 23);
             this.testFormBtn.TabIndex = 12;
@@ -146,7 +146,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(806, 691);
+            this.ClientSize = new System.Drawing.Size(534, 260);
             this.Controls.Add(this.testFormBtn);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.progressRingIsDeterminateCheck);

@@ -55,124 +55,165 @@ public class FluentForm : Form
         _formIsActive = true;
     }
 
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            var cp = base.CreateParams;
+
+            // Remove styles that affect the border size
+            if(DesignMode)
+                cp.Style &= ~(WinApi.WS_CAPTION & ~(int)WinApi.WS_BORDER);
+
+            return cp;
+        }
+    }
+
     protected override void WndProc(ref Message m)
     {
-        if (WinApi.DwmIsCompositionEnabled())
+        if (!WinApi.DwmIsCompositionEnabled())
         {
-            // Remove standard frame.
-            if (m.Msg == WinApi.WM_NCCALCSIZE && m.WParam != IntPtr.Zero)
+            base.WndProc(ref m);
+            return;
+        }
+        
+        // Creation/Trigger WM_NCCALCSIZE.
+        if (m.Msg == WinApi.WM_CREATE)
+        {
+            WinApi.GetWindowRect(m.HWnd, out var rect);
+
+            WinApi.SetWindowPos(m.HWnd,
+                IntPtr.Zero,
+                rect.Left,
+                rect.Top,
+                rect.Width,
+                rect.Height - 31,
+                SetWindowPos.FrameChanged);
+
+            m.Result = IntPtr.Zero;
+        }
+
+        // Remove standard frame.
+        if (m.Msg == WinApi.WM_NCCALCSIZE && m.WParam != IntPtr.Zero)
+        {
+            // Window position.
+            var wPos = WINDOWPLACEMENT.Default;
+            WinApi.GetWindowPlacement(m.HWnd, ref wPos);
+
+            _preventResize = WindowState is FormWindowState.Minimized or FormWindowState.Maximized;
+            var isMaximized = wPos.ShowCmd == ShowWindowCommands.ShowMaximized;
+            var sizeParams = (NCCALCSIZE_PARAMS)m.GetLParam(typeof(NCCALCSIZE_PARAMS));
+
+            if (isMaximized || DesignMode)
+                sizeParams.rgrc[0].Top += 8;
+            
+            sizeParams.rgrc[0].Left += 8;
+            sizeParams.rgrc[0].Right -= 8;
+            sizeParams.rgrc[0].Bottom -= 8;
+
+            _topBorderOffset = _isOsWin10 && !isMaximized ? 1 : 0;
+
+            var width = sizeParams.rgrc[0].Width;
+            CreateCaptionButtonBounds(width);
+
+            if (_lastKnownWidth != width)
+                Invalidate();
+
+            _lastKnownWidth = width;
+            _lastKnownHitResult = 0;
+
+            Marshal.StructureToPtr(sizeParams, m.LParam, true);
+            m.Result = IntPtr.Zero;
+            return;
+        }
+
+        // Paint custom caption buttons.
+        if (m.Msg == WinApi.WM_PAINT)
+        {
+            WinApi.BeginPaint(m.HWnd, out var paintStruct);
+
+            PaintCustomCaption();
+
+            WinApi.EndPaint(m.HWnd, ref paintStruct);
+        }
+        
+        // Handle custom caption buttons.
+        if (m.Msg == WinApi.WM_NCLBUTTONDOWN)
+        {
+            var handle = false;
+            switch ((int) m.WParam)
             {
-                // Window position.
-                var wPos = WINDOWPLACEMENT.Default;
-                WinApi.GetWindowPlacement(m.HWnd, ref wPos);
-                
-                _preventResize = WindowState is FormWindowState.Minimized or FormWindowState.Maximized;
-                var isMaximized = wPos.ShowCmd == ShowWindowCommands.ShowMaximized;
-                var sizeParams = (NCCALCSIZE_PARAMS) m.GetLParam(typeof(NCCALCSIZE_PARAMS));
+                case WinApi.HTMINBUTTON:
+                    WindowState = FormWindowState.Minimized;
+                    handle = true;
+                    break;
+                case WinApi.HTMAXBUTTON:
+                    WindowState = WindowState == FormWindowState.Maximized
+                        ? FormWindowState.Normal
+                        : FormWindowState.Maximized;
 
-                if (isMaximized)
-                    sizeParams.rgrc[0].Top += 8;
-                
-                sizeParams.rgrc[0].Left += 8;
-                sizeParams.rgrc[0].Right -= 8;
-                sizeParams.rgrc[0].Bottom -= 8;
+                    handle = true;
+                    break;
+                case WinApi.HTCLOSE:
+                    Close();
+                    handle = true;
+                    break;
+            }
 
-                _topBorderOffset = _isOsWin10 && !isMaximized ? 1 : 0;
-
-                var width = sizeParams.rgrc[0].Width;
-                CreateCaptionButtonBounds(width);
-
-                if (_lastKnownWidth != width)
-                    Invalidate();
-
-                _lastKnownWidth = width;
-                _lastKnownHitResult = 0;
-
-                Marshal.StructureToPtr(sizeParams, m.LParam, true);
+            if (handle)
+            {
                 m.Result = IntPtr.Zero;
                 return;
             }
+        }
+        
+        // Hit test.
+        if (m.Msg == WinApi.WM_NCHITTEST)
+        {
+            var hitResult = HitTestNca(m.HWnd, m.LParam);
 
-            // Paint custom caption buttons.
-            if (m.Msg == WinApi.WM_PAINT)
-            {
-                WinApi.BeginPaint(m.HWnd, out var paintStruct);
+            m.Result = (IntPtr) hitResult;
 
-                PaintCustomCaption();
-
-                WinApi.EndPaint(m.HWnd, ref paintStruct);
-            }
-            
-            // Handle custom caption buttons.
-            if (m.Msg == WinApi.WM_NCLBUTTONDOWN)
-            {
-                switch ((int) m.WParam)
-                {
-                    case WinApi.HTMINBUTTON:
-                        WindowState = FormWindowState.Minimized;
-                        m.Result = IntPtr.Zero;
-                        break;
-                    case WinApi.HTMAXBUTTON:
-                        WindowState = WindowState == FormWindowState.Maximized
-                            ? FormWindowState.Normal
-                            : FormWindowState.Maximized;
-
-                        m.Result = IntPtr.Zero;
-                        break;
-                    case WinApi.HTCLOSE:
-                        Close();
-                        m.Result = IntPtr.Zero;
-                        break;
-                }
-            }
-            
-            // Hit test.
-            if (m.Msg == WinApi.WM_NCHITTEST)
-            {
-                var hitResult = HitTestNca(m.HWnd, m.LParam);
-
-                m.Result = (IntPtr) hitResult;
-
-                if (hitResult != WinApi.HTNOWHERE)
-                    return;
-            }
-
-            // Prevent second-resizing when restoring window.
-            if (m.Msg == WinApi.WM_WINDOWPOSCHANGING && _preventResize)
-            {
-                var winPos = (WINDOWPOS)m.GetLParam(typeof(WINDOWPOS));
-
-                // Set flags.
-                winPos.flags |= 0x0001;
-                winPos.flags &= ~(uint)0x0020;
-
-                // Commit.
-                Marshal.StructureToPtr(winPos, m.LParam, true);
-                m.Result = IntPtr.Zero;
-                _preventResize = false;
+            if (hitResult != WinApi.HTNOWHERE)
                 return;
-            }
+        }
 
-            // Respond to windows activation.
-            if (m.Msg == WinApi.WM_NCACTIVATE && _isOsWin10)
+        // Prevent second-resizing when restoring window.
+        if (m.Msg == WinApi.WM_WINDOWPOSCHANGING && _preventResize)
+        {
+            var winPos = (WINDOWPOS)m.GetLParam(typeof(WINDOWPOS));
+
+            // Set flags.
+            winPos.flags |= 0x0001;
+            winPos.flags &= ~(uint)0x0020;
+
+            // Commit.
+            Marshal.StructureToPtr(winPos, m.LParam, true);
+            m.Result = IntPtr.Zero;
+
+            _preventResize = false;
+            return;
+        }
+
+        // Respond to windows activation.
+        if (m.Msg == WinApi.WM_NCACTIVATE)
+        {
+            _formIsActive = m.WParam != IntPtr.Zero;
+            Invalidate();
+        }
+
+        // Respond to personalization settings changes.
+        if (m.Msg == WinApi.WM_SETTINGCHANGE)
+        {
+            var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+            if (windowsDwmSettings != null)
             {
-                _formIsActive = m.WParam != IntPtr.Zero;
-                Invalidate();
+                _isColorPrevalent = (int) (windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
+                windowsDwmSettings.Close();
             }
 
-            // Respond to personalization settings changes.
-            if (m.Msg == WinApi.WM_SETTINGCHANGE)
-            {
-                var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
-                if (windowsDwmSettings != null)
-                {
-                    _isColorPrevalent = (int) (windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
-                    windowsDwmSettings.Close();
-                }
-
-                _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
-                Invalidate();
-            }
+            _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
+            Invalidate();
         }
 
         base.WndProc(ref m);
@@ -291,12 +332,13 @@ public class FluentForm : Form
             borderPen.Dispose();
         }
 
-        // Guide line for title bar boundaries during design.
+        // Guide line for non-client area boundaries during design.
         if (DesignMode)
         {
-            var guidePen = new Pen(Color.LightGray, 1);
+            var guidePen = new Pen(Color.Gray, 1);
             guidePen.DashStyle = DashStyle.Dash;
-
+            
+            graphics.DrawRectangle(guidePen, new Rectangle(Point.Empty, new Size(ClientSize.Width - 1, ClientSize.Height - 1)));
             graphics.DrawLine(guidePen, new Point(0, DEFAULT_CAPTION_HEIGHT), new Point(ClientRectangle.Right, DEFAULT_CAPTION_HEIGHT));
             guidePen.Dispose();
         }

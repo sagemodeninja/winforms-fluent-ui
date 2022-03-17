@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
+// ReSharper disable IdentifierTypo
 // ReSharper disable once InconsistentNaming
 
 namespace WinForms.Fluent.UI.Utilities.Structures;
