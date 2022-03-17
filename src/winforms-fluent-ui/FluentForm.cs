@@ -32,6 +32,7 @@ public class FluentForm : Form
     private int _topBorderOffset;
     private bool _isColorPrevalent;
     private bool _formIsActive;
+    private bool _preventResize;
 
     protected FluentForm()
     {
@@ -58,55 +59,24 @@ public class FluentForm : Form
     {
         if (WinApi.DwmIsCompositionEnabled())
         {
-            // Creation/Trigger WM_NCCALCSIZE.
-            if (m.Msg == WinApi.WM_CREATE)
-            {
-                WinApi.GetWindowRect(m.HWnd, out var rect);
-
-                WinApi.SetWindowPos(m.HWnd,
-                    IntPtr.Zero,
-                    rect.Left,
-                    rect.Top,
-                    rect.Width,
-                    rect.Height,
-                SetWindowPos.FrameChanged);
-
-                m.Result = IntPtr.Zero;
-            }
-
-            // Activation/Extend window frame.
-            if (m.Msg == WinApi.WM_ACTIVATE)
-            {
-                var margins = new MARGINS
-                {
-                    leftWidth = 0,
-                    rightWidth = 0,
-                    bottomHeight = 0,
-                    topHeight = 0
-                };
-
-                WinApi.DwmExtendFrameIntoClientArea(m.HWnd, ref margins);
-
-                m.Result = IntPtr.Zero;
-            }
-
-            // Calculate size/Remove standard frame.
+            // Remove standard frame.
             if (m.Msg == WinApi.WM_NCCALCSIZE && m.WParam != IntPtr.Zero)
             {
                 // Window position.
                 var wPos = WINDOWPLACEMENT.Default;
                 WinApi.GetWindowPlacement(m.HWnd, ref wPos);
-
+                
+                _preventResize = WindowState is FormWindowState.Minimized or FormWindowState.Maximized;
                 var isMaximized = wPos.ShowCmd == ShowWindowCommands.ShowMaximized;
-                var sizeParams = (NCCALCSIZE_PARAMS)m.GetLParam(typeof(NCCALCSIZE_PARAMS));
+                var sizeParams = (NCCALCSIZE_PARAMS) m.GetLParam(typeof(NCCALCSIZE_PARAMS));
 
                 if (isMaximized)
                     sizeParams.rgrc[0].Top += 8;
-
+                
                 sizeParams.rgrc[0].Left += 8;
                 sizeParams.rgrc[0].Right -= 8;
                 sizeParams.rgrc[0].Bottom -= 8;
-                
+
                 _topBorderOffset = _isOsWin10 && !isMaximized ? 1 : 0;
 
                 var width = sizeParams.rgrc[0].Width;
@@ -123,7 +93,7 @@ public class FluentForm : Form
                 return;
             }
 
-            // Painting/Paint custom caption.
+            // Paint custom caption buttons.
             if (m.Msg == WinApi.WM_PAINT)
             {
                 WinApi.BeginPaint(m.HWnd, out var paintStruct);
@@ -132,73 +102,75 @@ public class FluentForm : Form
 
                 WinApi.EndPaint(m.HWnd, ref paintStruct);
             }
-
-            // Non-client click/Handle custom caption.
+            
+            // Handle custom caption buttons.
             if (m.Msg == WinApi.WM_NCLBUTTONDOWN)
             {
-                var handle = false;
-
-                switch ((int)m.WParam)
+                switch ((int) m.WParam)
                 {
                     case WinApi.HTMINBUTTON:
                         WindowState = FormWindowState.Minimized;
-                        handle = true;
+                        m.Result = IntPtr.Zero;
                         break;
                     case WinApi.HTMAXBUTTON:
                         WindowState = WindowState == FormWindowState.Maximized
                             ? FormWindowState.Normal
                             : FormWindowState.Maximized;
 
-                        handle = true;
+                        m.Result = IntPtr.Zero;
                         break;
                     case WinApi.HTCLOSE:
                         Close();
-                        handle = true;
+                        m.Result = IntPtr.Zero;
                         break;
                 }
-
-                if (handle)
-                {
-                    m.Result = IntPtr.Zero;
-                    return;
-                }
             }
-
+            
             // Hit test.
-            var result = IntPtr.Zero;
-            if (WinApi.DwmDefWindowProc(m.HWnd, m.Msg, m.WParam, m.LParam, ref result))
-            {
-                m.Result = result;
-                return;
-            }
-
-            if (m.Msg == WinApi.WM_NCHITTEST && result == IntPtr.Zero)
+            if (m.Msg == WinApi.WM_NCHITTEST)
             {
                 var hitResult = HitTestNca(m.HWnd, m.LParam);
 
-                m.Result = (IntPtr)hitResult;
+                m.Result = (IntPtr) hitResult;
 
                 if (hitResult != WinApi.HTNOWHERE)
                     return;
             }
 
-            // Settings changed.
+            // Prevent second-resizing when restoring window.
+            if (m.Msg == WinApi.WM_WINDOWPOSCHANGING && _preventResize)
+            {
+                var winPos = (WINDOWPOS)m.GetLParam(typeof(WINDOWPOS));
+
+                // Set flags.
+                winPos.flags |= 0x0001;
+                winPos.flags &= ~(uint)0x0020;
+
+                // Commit.
+                Marshal.StructureToPtr(winPos, m.LParam, true);
+                m.Result = IntPtr.Zero;
+                _preventResize = false;
+                return;
+            }
+
+            // Respond to windows activation.
+            if (m.Msg == WinApi.WM_NCACTIVATE && _isOsWin10)
+            {
+                _formIsActive = m.WParam != IntPtr.Zero;
+                Invalidate();
+            }
+
+            // Respond to personalization settings changes.
             if (m.Msg == WinApi.WM_SETTINGCHANGE)
             {
                 var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
                 if (windowsDwmSettings != null)
                 {
-                    _isColorPrevalent = (int)(windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
+                    _isColorPrevalent = (int) (windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
                     windowsDwmSettings.Close();
                 }
-                _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
-                Invalidate();
-            }
 
-            // Window active state.
-            if (m.Msg == WinApi.WM_NCACTIVATE && _isOsWin10)
-            {
-                _formIsActive = m.WParam != IntPtr.Zero;
+                _osAccentColor = GraphicsHelper.GetWindowsAccentColor(true);
                 Invalidate();
             }
         }

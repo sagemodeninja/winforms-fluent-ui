@@ -45,7 +45,7 @@
             this.progressRing1.BackColor = System.Drawing.SystemColors.Control;
             this.progressRing1.EllipseWidth = 8F;
             this.progressRing1.IsIndeterminate = false;
-            this.progressRing1.Location = new System.Drawing.Point(29, 82);
+            this.progressRing1.Location = new System.Drawing.Point(45, 82);
             this.progressRing1.MaxValue = 100F;
             this.progressRing1.Name = "progressRing1";
             this.progressRing1.Size = new System.Drawing.Size(75, 75);
@@ -56,7 +56,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(29, 52);
+            this.label1.Location = new System.Drawing.Point(12, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(79, 15);
             this.label1.TabIndex = 4;
@@ -64,7 +64,7 @@
             // 
             // progressRingValueNud
             // 
-            this.progressRingValueNud.Location = new System.Drawing.Point(111, 134);
+            this.progressRingValueNud.Location = new System.Drawing.Point(157, 134);
             this.progressRingValueNud.Name = "progressRingValueNud";
             this.progressRingValueNud.Size = new System.Drawing.Size(67, 23);
             this.progressRingValueNud.TabIndex = 6;
@@ -78,7 +78,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(111, 116);
+            this.label2.Location = new System.Drawing.Point(157, 116);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(38, 15);
             this.label2.TabIndex = 7;
@@ -114,7 +114,7 @@
             this.progressRingIsDeterminateCheck.Checked = false;
             this.progressRingIsDeterminateCheck.CheckState = System.Windows.Forms.CheckState.Unchecked;
             this.progressRingIsDeterminateCheck.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.progressRingIsDeterminateCheck.Location = new System.Drawing.Point(111, 82);
+            this.progressRingIsDeterminateCheck.Location = new System.Drawing.Point(157, 82);
             this.progressRingIsDeterminateCheck.Name = "progressRingIsDeterminateCheck";
             this.progressRingIsDeterminateCheck.Size = new System.Drawing.Size(133, 24);
             this.progressRingIsDeterminateCheck.TabIndex = 10;
@@ -146,7 +146,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(806, 521);
+            this.ClientSize = new System.Drawing.Size(806, 691);
             this.Controls.Add(this.testFormBtn);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.progressRingIsDeterminateCheck);
@@ -156,7 +156,6 @@
             this.Controls.Add(this.progressRingValueNud);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.progressRing1);
-            this.MinimizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
