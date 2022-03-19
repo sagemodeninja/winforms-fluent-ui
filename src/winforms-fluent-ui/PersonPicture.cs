@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 using DirectN;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Enums;
@@ -27,6 +28,8 @@ public class PersonPicture : Control
     private ID2D1HwndRenderTarget? _renderTarget;
     private ID2D1SolidColorBrush _ellipseBrush;
     private D2D1_ELLIPSE _ellipse;
+    private D2D1_ELLIPSE _maskEllipse;
+    private ID2D1EllipseGeometry _ellipseGeometry;
     private D2D_POINT_2F _initialsOrigin;
     private float _initialsSize;
 
@@ -184,7 +187,59 @@ public class PersonPicture : Control
 
                 if (_profileType == ProfileType.ProfileImage && _profilePicture is not null)
                 {
-                    //graphics.DrawImage(_profilePicture, coinRectangle);
+                    _renderTarget.GetSize(out var size);
+
+                    #region MASK
+
+                    _renderTarget.GetFactory(out var factory);
+                    factory.CreateEllipseGeometry(_maskEllipse, out var ellipseGeometry);
+                    
+                    _renderTarget.CreateLayer(IntPtr.Zero, out var layer);
+
+                    var ellipseGeometryPtr = Marshal.GetIUnknownForObject(ellipseGeometry);
+                    _renderTarget.PushLayer(new D2D1_LAYER_PARAMETERS
+                    {
+                        contentBounds = new D2D_RECT_F(new D2D_POINT_2F(0, 0), size),
+                        geometricMask = ellipseGeometryPtr,
+                        maskTransform = D2D_MATRIX_3X2_F.Identity(),
+                        opacity = 1f
+                    }, layer);
+
+                    #endregion
+
+                    #region BITMAP
+                    // Convert to stream.
+                    using var stream = new MemoryStream();
+                    _profilePicture.Save(stream, _profilePicture.RawFormat);
+
+                    // Source.
+                    using var bitmapSource = WICFunctions.LoadBitmapSource(stream);
+                    
+                    // Properties.
+                    var pixelFormat = new D2D1_PIXEL_FORMAT
+                    {
+                        format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+                        alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_IGNORE
+                    };
+                    var bitmapProperties = new D2D1_BITMAP_PROPERTIES
+                    {
+                        pixelFormat = pixelFormat,
+                        dpiX = _profilePicture.HorizontalResolution,
+                        dpiY = _profilePicture.VerticalResolution
+                    };
+                    var bitmapPropertiesPtr = Marshal.AllocHGlobal(Marshal.SizeOf(bitmapProperties));
+                    Marshal.StructureToPtr(bitmapProperties, bitmapPropertiesPtr, false);
+                    
+                    // Create bitmap.
+                    _renderTarget.CreateBitmapFromWicBitmap(bitmapSource.Object, bitmapPropertiesPtr, out var bitmap);
+
+                    if (bitmap is null)
+                        return;
+                    #endregion
+                    
+                    var destRect = new D2D_RECT_F(_initialsOrigin, new D2D_SIZE_F(_radius * 2, _radius * 2));
+                    _renderTarget.DrawBitmap(bitmap, 1.0f, D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destRect);
+                    _renderTarget.PopLayer();
                 }
                 else
                 {
@@ -192,16 +247,6 @@ public class PersonPicture : Control
                     var initials = _profileType == ProfileType.DisplayName && !string.IsNullOrEmpty(_displayName)
                         ? GetInitialsFromDisplayName(_displayName)
                         : _initials;
-                    //var initialsFont = new Font(Font.FontFamily, initialsSize, FontStyle.Bold, GraphicsUnit.Pixel);
-
-                    //if (!string.IsNullOrEmpty(initials))
-                    //{
-                    //    graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
-                    //    TextRenderer.DrawText(graphics, initials, initialsFont, coinRectangle, _fontColor,
-                    //        TextFormatFlags.NoPadding | TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-                    //}
-
-                    //initialsFont.Dispose();
                     var initialsColor = GraphicsHelper.ColorToD3dColor(_initialsColor);
                     _renderTarget.CreateSolidColorBrush(ref initialsColor, IntPtr.Zero, out var initialsBrush);
 
@@ -218,16 +263,7 @@ public class PersonPicture : Control
 
                     initialsFormat.SetTextAlignment(DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_CENTER);
                     initialsFormat.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-
-                    //writeFactory.Object.CreateTextLayout(initials,
-                    //    (uint) initials.Length,
-                    //    initialsFormat,
-                    //    _radius * 2,
-                    //    _radius * 2,
-                    //    out var initialsLayout);
-
-                    //_renderTarget.DrawTextLayout(_initialsOrigin, initialsLayout, initialsBrush, D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_NONE);
-                    //_initialsOrigin.y = _initialsOrigin.y + _radius - (initialsSize / 2);
+                    
                     var initialsRect = new D2D_RECT_F(_initialsOrigin, _radius * 2, _radius * 2);
                     _renderTarget.DrawText(initials, initialsFormat, initialsRect, initialsBrush);
                 }
@@ -269,6 +305,7 @@ public class PersonPicture : Control
 
         _radius = Math.Min(x, y);
         _ellipse = new D2D1_ELLIPSE(x, y, _radius);
+        _maskEllipse = new D2D1_ELLIPSE(x, y, _radius);
 
         // Initials.
         _initialsSize = (_radius * 2) * 0.45f;
@@ -300,6 +337,8 @@ public class PersonPicture : Control
             return hr;
         
         CalculateLayout();
+        _factory.CreateEllipseGeometry(_ellipse, out _ellipseGeometry);
+
         return hr;
     }
 
