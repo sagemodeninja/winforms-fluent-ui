@@ -26,6 +26,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int WM_SETTINGCHANGE = 0x001A;
         public const int WM_NCACTIVATE = 0x0086;
         public const int WM_WINDOWPOSCHANGING = 0x0046;
+        public const int WM_SIZE = 0x0005;
 
         #endregion
 
@@ -51,6 +52,9 @@ namespace WinForms.Fluent.UI.Utilities.Classes
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
         [DllImport("user32.dll")]
         public static extern bool AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu);
