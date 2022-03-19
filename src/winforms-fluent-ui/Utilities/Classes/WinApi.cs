@@ -11,7 +11,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
     public static class WinApi
     {
         #region WINDOW MESSAGES
-
+        
         public const int WM_CREATE = 0x0001;
         public const int WM_DESTROY = 0x0002;
         public const int WM_PAINT = 0x000f;
@@ -20,12 +20,12 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int WM_LBUTTONDOWN = 0x0201;
         public const int WM_LBUTTONDBLCLK = 0x0203;
         public const int WM_MOUSELEAVE = 0x02A3;
-        public const int WM_ACTIVATE = 0x0006;
         public const int WM_NCCALCSIZE = 0x0083;
         public const int WM_NCHITTEST = 0x0084;
         public const int WM_NCLBUTTONDOWN = 0x00A1;
         public const int WM_SETTINGCHANGE = 0x001A;
         public const int WM_NCACTIVATE = 0x0086;
+        public const int WM_WINDOWPOSCHANGING = 0x0046;
 
         #endregion
 
@@ -34,12 +34,6 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         // DWM API.
         [DllImport("dwmapi.dll", EntryPoint = "#127")]
         public static extern void DwmGetColorizationParameters(ref DWMCOLORIZATIONPARAMS colors);
-
-        [DllImport("dwmapi.dll")]
-        public static extern bool DwmDefWindowProc(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
-
-        [DllImport("dwmapi.dll", PreserveSig = true)]
-        public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
@@ -71,12 +65,6 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
-        [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
-        private static extern int SetWindowLong32(HandleRef hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
-        private static extern IntPtr SetWindowLongPtr64(HandleRef hWnd, int nIndex, IntPtr dwNewLong);
-
         #endregion
 
         #region FLAGS
@@ -97,14 +85,15 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int HTCLOSE = 20;
 
         // Window styles.
+        public const long WS_BORDER = 0x00800000L;
         public const int WS_OVERLAPPED = 0x00000000;
         public const int WS_CAPTION = 0x00C00000;
         public const int WS_SYSMENU = 0x00080000;
         public const int WS_THICKFRAME = 0x00040000;
         public const int WS_MINIMIZEBOX = 0x00020000;
-        public const int WS_MAXIMIZEBOX = 0x00010000;
+        public const long WS_MAXIMIZEBOX = 0x00010000L;
         public const int WS_OVERLAPPEDWINDOW =
-            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | (int)WS_MAXIMIZEBOX;
 
         // Others.
 
