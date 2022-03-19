@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Drawing2D;
 using System.Drawing.Text;
+using DirectN;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Structures;
 
@@ -76,6 +77,15 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
                                     .ToArray();
 
             return Color.FromArgb(colors[0], colors[1], colors[2]);
+        }
+
+        public static _D3DCOLORVALUE ColorToD3dColor(Color originalColor)
+        {
+            var r = originalColor.R / 255f;
+            var g = originalColor.G / 255f;
+            var b = originalColor.B / 255f;
+
+            return new _D3DCOLORVALUE(r, g, b);
         }
 
         #endregion

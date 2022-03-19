@@ -18,6 +18,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="C:\Users\conta\.nuget\packages\directncore\1.13.0\contentFiles\any\net5.0-windows10.0.19041\DirectN.ico" />
+    <Content Remove="C:\Users\conta\.nuget\packages\directncore\1.13.0\contentFiles\any\net5.0-windows10.0.19041\DirectN.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DirectNCore" Version="1.13.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="FluentForm.cs">
       <SubType>Form</SubType>
     </Compile>
