@@ -25,6 +25,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public const int WM_NCLBUTTONDOWN = 0x00A1;
         public const int WM_SETTINGCHANGE = 0x001A;
         public const int WM_NCACTIVATE = 0x0086;
+        public const int WM_WINDOWPOSCHANGING = 0x0046;
 
         #endregion
 
