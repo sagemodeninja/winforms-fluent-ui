@@ -63,7 +63,12 @@ public class FluentForm : Form
 
             // Remove styles that affect the border size
             if(DesignMode)
-                cp.Style &= ~(WinApi.WS_CAPTION & ~(int)WinApi.WS_BORDER);
+            {
+                cp.Style &= ~WinApi.WS_CAPTION;
+
+                if (FormBorderStyle is not FormBorderStyle.FixedSingle and not FormBorderStyle.FixedToolWindow)
+                    cp.Style |= (int)WinApi.WS_BORDER;
+            }
 
             return cp;
         }
@@ -106,11 +111,18 @@ public class FluentForm : Form
 
             if (isMaximized || DesignMode)
                 sizeParams.rgrc[0].Top += 8;
-            
-            sizeParams.rgrc[0].Left += 8;
-            sizeParams.rgrc[0].Right -= 8;
-            sizeParams.rgrc[0].Bottom -= 8;
 
+            if (FormBorderStyle.ToString().Contains("Fixed") && DesignMode)
+            {
+                sizeParams.rgrc[0].Top -= 8;
+            }
+            else
+            {
+                sizeParams.rgrc[0].Left += 8;
+                sizeParams.rgrc[0].Right -= 8;
+                sizeParams.rgrc[0].Bottom -= 8;
+            }
+            
             _topBorderOffset = _isOsWin10 && !isMaximized ? 1 : 0;
 
             var width = sizeParams.rgrc[0].Width;
