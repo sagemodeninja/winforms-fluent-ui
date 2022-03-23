@@ -1,4 +1,5 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System.Diagnostics;
+using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using WinForms.Fluent.UI.Utilities.Classes;
@@ -55,6 +56,16 @@ public class FluentForm : Form
         _formIsActive = true;
     }
 
+    private bool _isFormLoaded;
+    private bool _isLoadedMaximized;
+    private bool _hasBeenRestored;
+
+    protected override void OnLoad(EventArgs e)
+    {
+        _isFormLoaded = true;
+        base.OnLoad(e);
+    }
+
     protected override CreateParams CreateParams
     {
         get
@@ -105,7 +116,10 @@ public class FluentForm : Form
             var wPos = WINDOWPLACEMENT.Default;
             WinApi.GetWindowPlacement(m.HWnd, ref wPos);
 
-            _preventResize = WindowState is FormWindowState.Minimized or FormWindowState.Maximized;
+            if(!_isFormLoaded)
+                _isLoadedMaximized = WindowState == FormWindowState.Maximized;
+
+            _preventResize = WindowState == FormWindowState.Minimized || WindowState == FormWindowState.Maximized && !(_isLoadedMaximized && !_hasBeenRestored);
             var isMaximized = wPos.ShowCmd == ShowWindowCommands.ShowMaximized;
             var sizeParams = (NCCALCSIZE_PARAMS)m.GetLParam(typeof(NCCALCSIZE_PARAMS));
 
@@ -160,9 +174,15 @@ public class FluentForm : Form
                     handle = true;
                     break;
                 case WinApi.HTMAXBUTTON:
-                    WindowState = WindowState == FormWindowState.Maximized
-                        ? FormWindowState.Normal
-                        : FormWindowState.Maximized;
+                    if (WindowState == FormWindowState.Maximized)
+                    {
+                        WinApi.ShowWindow(m.HWnd, WinApi.SW_RESTORE);
+                        _hasBeenRestored = true;
+                    }
+                    else
+                    {
+                        WindowState = FormWindowState.Maximized;
+                    }
 
                     handle = true;
                     break;
