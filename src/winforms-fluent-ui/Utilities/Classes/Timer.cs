@@ -1,4 +1,9 @@
-﻿namespace WinForms.Fluent.UI.Utilities.Classes
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+
+namespace WinForms.Fluent.UI.Utilities.Classes
 {
     /// <summary>The timer class, will execute your code in specific time frames.</summary>
     public class Timer

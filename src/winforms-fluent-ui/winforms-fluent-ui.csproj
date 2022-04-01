@@ -5,9 +5,8 @@
     <RootNamespace>WinForms.Fluent.UI</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>WinForms.Fluent.UI</PackageId>
-    <Version>1.1.2-alpha</Version>
+    <Version>1.1.2</Version>
     <Authors>contact@garyantier.com</Authors>
     <Product>$(PackageId)</Product>
     <Description>Fluent UI/WinUI 3 Controls for WinForms.</Description>
@@ -27,9 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="FluentForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Update="FluentForm.cs" />
   </ItemGroup>
 
 </Project>

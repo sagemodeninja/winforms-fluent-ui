@@ -1,4 +1,6 @@
-﻿namespace winforms_fluent_ui_gallery
+﻿using System.Windows.Forms;
+
+namespace winforms_fluent_ui_gallery
 {
     partial class MainForm
     {
