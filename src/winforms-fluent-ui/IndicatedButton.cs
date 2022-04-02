@@ -1,4 +1,6 @@
-﻿using DirectN;
+﻿using System;
+using System.Windows.Forms;
+using DirectN;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Helpers;
 

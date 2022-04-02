@@ -52,11 +52,11 @@ namespace winforms_fluent_ui_gallery
             var form = new TestForm();
             form.Show();
         }
-    }
 
-    private void button1_Click(object sender, EventArgs e)
-    {
-        var testForm = new TestForm();
-        testForm.Show();
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var testForm = new TestForm();
+            testForm.Show();
+        }
     }
 }

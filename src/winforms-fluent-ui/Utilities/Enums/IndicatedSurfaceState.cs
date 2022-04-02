@@ -1,4 +1,6 @@
-﻿namespace WinForms.Fluent.UI.Utilities.Enums
+﻿using System;
+
+namespace WinForms.Fluent.UI.Utilities.Enums
 {
     [Flags]
     public enum IndicatedSurfaceState

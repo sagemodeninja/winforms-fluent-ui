@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Windows.Forms;
 using DirectN;
 using WinForms.Fluent.UI.Utilities.Enums;
 using WinForms.Fluent.UI.Utilities.Helpers;
