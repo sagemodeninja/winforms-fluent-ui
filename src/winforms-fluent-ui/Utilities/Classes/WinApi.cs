@@ -70,6 +70,9 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
+        [DllImport("user32.dll")]
+        public static extern int ShowWindow(IntPtr hWnd, uint Msg);
+
         #endregion
 
         #region FLAGS
@@ -91,16 +94,17 @@ namespace WinForms.Fluent.UI.Utilities.Classes
 
         // Window styles.
         public const long WS_BORDER = 0x00800000L;
-        public const int WS_OVERLAPPED = 0x00000000;
+        private const int WS_OVERLAPPED = 0x00000000;
         public const int WS_CAPTION = 0x00C00000;
-        public const int WS_SYSMENU = 0x00080000;
-        public const int WS_THICKFRAME = 0x00040000;
-        public const int WS_MINIMIZEBOX = 0x00020000;
-        public const long WS_MAXIMIZEBOX = 0x00010000L;
+        private const int WS_SYSMENU = 0x00080000;
+        private const int WS_THICKFRAME = 0x00040000;
+        private const int WS_MINIMIZEBOX = 0x00020000;
+        private const long WS_MAXIMIZEBOX = 0x00010000L;
         public const int WS_OVERLAPPEDWINDOW =
             WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | (int)WS_MAXIMIZEBOX;
 
         // Others.
+        public const uint SW_RESTORE = 0x09;
 
         #endregion
 

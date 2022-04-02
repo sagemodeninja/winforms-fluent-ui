@@ -53,4 +53,10 @@ namespace winforms_fluent_ui_gallery
             form.Show();
         }
     }
+
+    private void button1_Click(object sender, EventArgs e)
+    {
+        var testForm = new TestForm();
+        testForm.Show();
+    }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
@@ -58,6 +58,16 @@ namespace WinForms.Fluent.UI
             _formIsActive = true;
         }
 
+        private bool _isFormLoaded;
+        private bool _isLoadedMaximized;
+        private bool _hasBeenRestored;
+
+        protected override void OnLoad(EventArgs e)
+        {
+            _isFormLoaded = true;
+            base.OnLoad(e);
+        }
+
         protected override CreateParams CreateParams
         {
             get
@@ -65,8 +75,13 @@ namespace WinForms.Fluent.UI
                 var cp = base.CreateParams;
 
                 // Remove styles that affect the border size
-                if (DesignMode)
-                    cp.Style &= ~(WinApi.WS_CAPTION & ~(int)WinApi.WS_BORDER);
+                if(DesignMode)
+                {
+                    cp.Style &= ~WinApi.WS_CAPTION;
+
+                    if (FormBorderStyle is not FormBorderStyle.FixedSingle and not FormBorderStyle.FixedToolWindow)
+                        cp.Style |= (int)WinApi.WS_BORDER;
+                }
 
                 return cp;
             }
@@ -103,16 +118,26 @@ namespace WinForms.Fluent.UI
                 var wPos = WINDOWPLACEMENT.Default;
                 WinApi.GetWindowPlacement(m.HWnd, ref wPos);
 
-                _preventResize = WindowState is FormWindowState.Minimized or FormWindowState.Maximized;
+                if(!_isFormLoaded)
+                    _isLoadedMaximized = WindowState == FormWindowState.Maximized;
+
+                _preventResize = WindowState == FormWindowState.Minimized || WindowState == FormWindowState.Maximized && !(_isLoadedMaximized && !_hasBeenRestored);
                 var isMaximized = wPos.ShowCmd == ShowWindowCommands.ShowMaximized;
                 var sizeParams = (NCCALCSIZE_PARAMS)m.GetLParam(typeof(NCCALCSIZE_PARAMS));
 
                 if (isMaximized || DesignMode)
                     sizeParams.rgrc[0].Top += 8;
 
-                sizeParams.rgrc[0].Left += 8;
-                sizeParams.rgrc[0].Right -= 8;
-                sizeParams.rgrc[0].Bottom -= 8;
+                if (FormBorderStyle.ToString().Contains("Fixed") && DesignMode)
+                {
+                    sizeParams.rgrc[0].Top -= 8;
+                }
+                else
+                {
+                    sizeParams.rgrc[0].Left += 8;
+                    sizeParams.rgrc[0].Right -= 8;
+                    sizeParams.rgrc[0].Bottom -= 8;
+                }
 
                 _topBorderOffset = _isOsWin10 && !isMaximized ? 1 : 0;
 
@@ -144,16 +169,22 @@ namespace WinForms.Fluent.UI
             if (m.Msg == WinApi.WM_NCLBUTTONDOWN)
             {
                 var handle = false;
-                switch ((int)m.WParam)
+                switch ((int) m.WParam)
                 {
                     case WinApi.HTMINBUTTON:
                         WindowState = FormWindowState.Minimized;
                         handle = true;
                         break;
                     case WinApi.HTMAXBUTTON:
-                        WindowState = WindowState == FormWindowState.Maximized
-                            ? FormWindowState.Normal
-                            : FormWindowState.Maximized;
+                        if (WindowState == FormWindowState.Maximized)
+                        {
+                            WinApi.ShowWindow(m.HWnd, WinApi.SW_RESTORE);
+                            _hasBeenRestored = true;
+                        }
+                        else
+                        {
+                            WindowState = FormWindowState.Maximized;
+                        }
 
                         handle = true;
                         break;
@@ -175,7 +206,7 @@ namespace WinForms.Fluent.UI
             {
                 var hitResult = HitTestNca(m.HWnd, m.LParam);
 
-                m.Result = (IntPtr)hitResult;
+                m.Result = (IntPtr) hitResult;
 
                 if (hitResult != WinApi.HTNOWHERE)
                     return;
@@ -211,7 +242,7 @@ namespace WinForms.Fluent.UI
                 var windowsDwmSettings = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
                 if (windowsDwmSettings != null)
                 {
-                    _isColorPrevalent = (int)(windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
+                    _isColorPrevalent = (int) (windowsDwmSettings.GetValue("ColorPrevalence") ?? 0) == 1;
                     windowsDwmSettings.Close();
                 }
 
@@ -381,7 +412,7 @@ namespace WinForms.Fluent.UI
             var maximizeGlyphLocation = new Point(maximizeOffset, glyphYOffset);
             var closeGlyphLocation = new Point(closeOffset, glyphYOffset);
 
-            if (MinimizeBox || MaximizeBox)
+            if(MinimizeBox || MaximizeBox)
             {
                 TextRenderer.DrawText(graphics,
                     SegoeFluentIcons.CHROME_MINIMIZE,

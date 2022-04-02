@@ -45,6 +45,7 @@ namespace winforms_fluent_ui_gallery
             this.displayNameRadio = new System.Windows.Forms.RadioButton();
             this.initialsRadio = new System.Windows.Forms.RadioButton();
             this.profileTypeGroup = new System.Windows.Forms.GroupBox();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.progressRingValueNud)).BeginInit();
             this.profileTypeGroup.SuspendLayout();
             this.SuspendLayout();
@@ -149,7 +150,7 @@ namespace winforms_fluent_ui_gallery
             this.personPicture1.Name = "personPicture1";
             this.personPicture1.ProfilePicture = ((System.Drawing.Image)(resources.GetObject("personPicture1.ProfilePicture")));
             this.personPicture1.ProfileType = WinForms.Fluent.UI.Utilities.Enums.ProfileType.ProfileImage;
-            this.personPicture1.Size = new System.Drawing.Size(95, 95);
+            this.personPicture1.Size = new System.Drawing.Size(91, 94);
             this.personPicture1.TabIndex = 13;
             this.personPicture1.Text = "personPicture1";
             // 
@@ -209,12 +210,23 @@ namespace winforms_fluent_ui_gallery
             this.profileTypeGroup.TabStop = false;
             this.profileTypeGroup.Text = "Profile Type";
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(482, 276);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(114, 24);
+            this.button1.TabIndex = 20;
+            this.button1.Text = "Open Test Form";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(243)))), ((int)(((byte)(243)))));
-            this.ClientSize = new System.Drawing.Size(619, 472);
+            this.ClientSize = new System.Drawing.Size(767, 372);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.profileTypeGroup);
             this.Controls.Add(this.personPicture1);
             this.Controls.Add(this.label4);
@@ -228,7 +240,8 @@ namespace winforms_fluent_ui_gallery
             this.Controls.Add(this.progressRing1);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Form1";
+            this.Text = "B";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.progressRingValueNud)).EndInit();
@@ -254,5 +267,6 @@ namespace winforms_fluent_ui_gallery
         private RadioButton displayNameRadio;
         private RadioButton initialsRadio;
         private GroupBox profileTypeGroup;
+        private Button button1;
     }
 }
