@@ -1,5 +1,9 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Text;
+using System.Linq;
+using System.Windows.Forms;
 using DirectN;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Structures;

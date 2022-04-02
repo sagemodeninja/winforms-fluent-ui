@@ -1,4 +1,6 @@
-﻿namespace WinForms.Fluent.UI.Utilities.Classes
+﻿using System.Drawing;
+
+namespace WinForms.Fluent.UI.Utilities.Classes
 {
     public static class SegoeFluentIcons
     {

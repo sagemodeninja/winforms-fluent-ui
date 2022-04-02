@@ -1,4 +1,6 @@
-﻿namespace WinForms.Fluent.UI.Utilities.Classes
+﻿using System;
+
+namespace WinForms.Fluent.UI.Utilities.Classes
 {
     public static class EasingFunctions
     {

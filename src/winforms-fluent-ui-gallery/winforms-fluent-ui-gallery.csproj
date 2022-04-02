@@ -6,7 +6,6 @@
     <RootNamespace>winforms_fluent_ui_gallery</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 

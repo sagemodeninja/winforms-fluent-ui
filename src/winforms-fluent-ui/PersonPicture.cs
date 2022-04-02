@@ -1,13 +1,16 @@
-﻿using System.ComponentModel;
+using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using DirectN;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Enums;
 using WinForms.Fluent.UI.Utilities.Helpers;
 
-namespace WinForms.Fluent.UI;
-
-public class PersonPicture : Control
+namespace WinForms.Fluent.UI
 {
     private const float DEFAULT_RADIUS = 47.5f;
 

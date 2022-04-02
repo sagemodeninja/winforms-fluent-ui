@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using WinForms.Fluent.UI.Utilities.Enums;
 using WinForms.Fluent.UI.Utilities.Structures;
 

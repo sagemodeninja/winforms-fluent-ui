@@ -1,20 +1,21 @@
 ﻿// ReSharper disable once InconsistentNaming
 
-namespace WinForms.Fluent.UI.Utilities.Structures;
-
-public struct DWMCOLORIZATIONPARAMS
+namespace WinForms.Fluent.UI.Utilities.Structures
 {
-    public uint ColorizationColor;
+    public struct DWMCOLORIZATIONPARAMS
+    {
+        public uint ColorizationColor;
 
-    public uint ColorizationAfterglow;
+        public uint ColorizationAfterglow;
 
-    public uint ColorizationColorBalance;
+        public uint ColorizationColorBalance;
 
-    public uint ColorizationAfterglowBalance;
+        public uint ColorizationAfterglowBalance;
 
-    public uint ColorizationBlurBalance;
+        public uint ColorizationBlurBalance;
 
-    public uint ColorizationGlassReflectionIntensity;
+        public uint ColorizationGlassReflectionIntensity;
 
-    public uint ColorizationOpaqueBlend;
+        public uint ColorizationOpaqueBlend;
+    }
 }
