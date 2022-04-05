@@ -46,6 +46,7 @@ namespace winforms_fluent_ui_gallery
             this.initialsRadio = new System.Windows.Forms.RadioButton();
             this.profileTypeGroup = new System.Windows.Forms.GroupBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.personPicture2 = new WinForms.Fluent.UI.PersonPicture();
             ((System.ComponentModel.ISupportInitialize)(this.progressRingValueNud)).BeginInit();
             this.profileTypeGroup.SuspendLayout();
             this.SuspendLayout();
@@ -55,7 +56,7 @@ namespace winforms_fluent_ui_gallery
             this.progressRing1.BackColor = System.Drawing.SystemColors.Control;
             this.progressRing1.EllipseWidth = 8F;
             this.progressRing1.IsIndeterminate = false;
-            this.progressRing1.Location = new System.Drawing.Point(45, 82);
+            this.progressRing1.Location = new System.Drawing.Point(47, 111);
             this.progressRing1.MaxValue = 100F;
             this.progressRing1.Name = "progressRing1";
             this.progressRing1.Size = new System.Drawing.Size(75, 75);
@@ -66,7 +67,7 @@ namespace winforms_fluent_ui_gallery
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(45, 52);
+            this.label1.Location = new System.Drawing.Point(47, 81);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(79, 15);
             this.label1.TabIndex = 4;
@@ -74,7 +75,7 @@ namespace winforms_fluent_ui_gallery
             // 
             // progressRingValueNud
             // 
-            this.progressRingValueNud.Location = new System.Drawing.Point(157, 134);
+            this.progressRingValueNud.Location = new System.Drawing.Point(159, 163);
             this.progressRingValueNud.Name = "progressRingValueNud";
             this.progressRingValueNud.Size = new System.Drawing.Size(67, 23);
             this.progressRingValueNud.TabIndex = 6;
@@ -88,7 +89,7 @@ namespace winforms_fluent_ui_gallery
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(157, 116);
+            this.label2.Location = new System.Drawing.Point(159, 145);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(38, 15);
             this.label2.TabIndex = 7;
@@ -99,7 +100,7 @@ namespace winforms_fluent_ui_gallery
             this.checkBox1.Checked = false;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Unchecked;
             this.checkBox1.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.checkBox1.Location = new System.Drawing.Point(339, 82);
+            this.checkBox1.Location = new System.Drawing.Point(341, 111);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(155, 24);
             this.checkBox1.TabIndex = 8;
@@ -112,7 +113,7 @@ namespace winforms_fluent_ui_gallery
             this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox2.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.checkBox2.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox2.Location = new System.Drawing.Point(339, 116);
+            this.checkBox2.Location = new System.Drawing.Point(341, 145);
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(165, 24);
             this.checkBox2.TabIndex = 9;
@@ -124,7 +125,7 @@ namespace winforms_fluent_ui_gallery
             this.progressRingIsDeterminateCheck.Checked = false;
             this.progressRingIsDeterminateCheck.CheckState = System.Windows.Forms.CheckState.Unchecked;
             this.progressRingIsDeterminateCheck.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.progressRingIsDeterminateCheck.Location = new System.Drawing.Point(157, 82);
+            this.progressRingIsDeterminateCheck.Location = new System.Drawing.Point(159, 111);
             this.progressRingIsDeterminateCheck.Name = "progressRingIsDeterminateCheck";
             this.progressRingIsDeterminateCheck.Size = new System.Drawing.Size(133, 24);
             this.progressRingIsDeterminateCheck.TabIndex = 10;
@@ -135,7 +136,7 @@ namespace winforms_fluent_ui_gallery
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(339, 52);
+            this.label3.Location = new System.Drawing.Point(341, 81);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(63, 15);
             this.label3.TabIndex = 11;
@@ -220,12 +221,29 @@ namespace winforms_fluent_ui_gallery
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // personPicture2
+            // 
+            this.personPicture2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.personPicture2.DisplayName = "Gary Antier";
+            this.personPicture2.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.personPicture2.Initials = "SB";
+            this.personPicture2.Location = new System.Drawing.Point(576, 11);
+            this.personPicture2.Name = "personPicture2";
+            this.personPicture2.ProfilePicture = ((System.Drawing.Image)(resources.GetObject("personPicture2.ProfilePicture")));
+            this.personPicture2.ProfileType = WinForms.Fluent.UI.Utilities.Enums.ProfileType.ProfileImage;
+            this.personPicture2.Size = new System.Drawing.Size(28, 28);
+            this.personPicture2.TabIndex = 21;
+            this.personPicture2.Text = "personPicture2";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(243)))), ((int)(((byte)(243)))));
+            this.CaptionHeight = 50;
+            this.CaptionTextFont = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.ClientSize = new System.Drawing.Size(767, 372);
+            this.Controls.Add(this.personPicture2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.profileTypeGroup);
             this.Controls.Add(this.personPicture1);
@@ -240,7 +258,7 @@ namespace winforms_fluent_ui_gallery
             this.Controls.Add(this.progressRing1);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "B";
+            this.Text = "WinForms Fluent UI";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
@@ -268,5 +286,6 @@ namespace winforms_fluent_ui_gallery
         private RadioButton initialsRadio;
         private GroupBox profileTypeGroup;
         private Button button1;
+        private WinForms.Fluent.UI.PersonPicture personPicture2;
     }
 }

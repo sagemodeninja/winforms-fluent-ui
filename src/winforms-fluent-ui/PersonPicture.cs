@@ -170,6 +170,7 @@ namespace WinForms.Fluent.UI
                     // Convert to stream.
                     using var stream = new MemoryStream();
                     _profilePicture.Save(stream, _profilePicture.RawFormat);
+                    stream.Position = 0;
 
                     // Source.
                     using var bitmapSource = WICFunctions.LoadBitmapSource(stream);
