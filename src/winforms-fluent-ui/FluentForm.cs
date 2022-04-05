@@ -401,7 +401,7 @@ namespace WinForms.Fluent.UI
             // Title.
             using var graphics = CreateGraphics();
             var titleSize = TextRenderer.MeasureText(graphics, Text, CaptionTextFont, Size.Empty, TextFormatFlags.NoPadding);
-            var titleLocation = _showCaptionIcon ? new Point(_iconBounds.Right + 6, (_captionHeight - titleSize.Height) / 2) : captionLeftCorner;
+            var titleLocation = _showCaptionIcon ? new Point(_iconBounds.Right + ICON_SIZE, (_captionHeight - titleSize.Height) / 2) : captionLeftCorner;
             
             _titleBounds = new Rectangle(titleLocation, titleSize);
         }
