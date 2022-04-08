@@ -66,6 +66,26 @@ namespace WinForms.Fluent.UI
             }
         }
 
+        protected override void OnPaddingChanged(EventArgs e)
+        {
+            CalculateLayout();
+            Invalidate();
+
+            base.OnPaddingChanged(e);
+        }
+
+        //public new Padding Padding
+        //{
+        //    get => base.Padding;
+        //    set
+        //    {
+        //        base.Padding = value;
+
+        //        CalculateLayout();
+        //        Invalidate();
+        //    }
+        //}
+
         [Category("Behavior"),
          Description("Gets or sets the contact's initials.")]
         public ProfileType ProfileType
@@ -243,15 +263,17 @@ namespace WinForms.Fluent.UI
             _renderTarget.GetSize(out var size);
 
             // Ellipse.
-            var x = size.width / 2;
-            var y = size.height / 2;
+            var radiusX = (size.width - Padding.Left - Padding.Right) / 2;
+            var radiusY = (size.height - Padding.Top - Padding.Bottom) / 2;
+            var x = radiusX + Padding.Left;
+            var y = radiusY + Padding.Top;
 
-            _radius = Math.Min(x, y);
+            _radius = Math.Min(radiusX, radiusY);
             _ellipse = new D2D1_ELLIPSE(x, y, _radius);
             _maskEllipse = new D2D1_ELLIPSE(x, y, _radius);
 
             // Initials.
-            _initialsSize = (_radius * 2) * 0.45f;
+            _initialsSize = (_radius * 2) * 0.45f; // 45% of diameter.
             var originX = x - _radius;
             var originY = y - _radius;
 

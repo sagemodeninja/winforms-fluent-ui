@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <PackageId>WinForms.Fluent.UI</PackageId>
-    <Version>1.1.7</Version>
+    <Version>1.1.8</Version>
     <Authors>contact@garyantier.com</Authors>
     <Product>$(PackageId)</Product>
     <Description>Fluent UI/WinUI 3 Controls for WinForms.</Description>

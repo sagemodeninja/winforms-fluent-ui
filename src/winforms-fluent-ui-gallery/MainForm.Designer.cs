@@ -149,6 +149,7 @@ namespace winforms_fluent_ui_gallery
             this.personPicture1.Initials = "SB";
             this.personPicture1.Location = new System.Drawing.Point(37, 266);
             this.personPicture1.Name = "personPicture1";
+            this.personPicture1.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
             this.personPicture1.ProfilePicture = ((System.Drawing.Image)(resources.GetObject("personPicture1.ProfilePicture")));
             this.personPicture1.ProfileType = WinForms.Fluent.UI.Utilities.Enums.ProfileType.ProfileImage;
             this.personPicture1.Size = new System.Drawing.Size(91, 94);
@@ -242,7 +243,7 @@ namespace winforms_fluent_ui_gallery
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(243)))), ((int)(((byte)(243)))));
             this.CaptionHeight = 50;
             this.CaptionTextFont = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.ClientSize = new System.Drawing.Size(767, 372);
+            this.ClientSize = new System.Drawing.Size(767, 411);
             this.Controls.Add(this.personPicture2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.profileTypeGroup);
