@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
@@ -15,7 +16,9 @@ namespace WinForms.Fluent.UI
 {
     public class FluentForm : Form
     {
-        public const int DEFAULT_CAPTION_HEIGHT = 30;
+        private const int DEFAULT_CAPTION_HEIGHT = 30;
+        private const int ICON_SIZE = 16;
+        private const int DEFAULT_CAPTION_BUTTON_HEIGHT = 30;
         private const int CAPTION_BUTTON_WIDTH = 46;
         private const int CAPTION_ICON_SIZE = 10;
 
@@ -23,6 +26,11 @@ namespace WinForms.Fluent.UI
         private readonly Color _defaultActiveBorderColor;
         private readonly Color _defaultInactiveBorderColor;
 
+        private int _captionHeight = DEFAULT_CAPTION_HEIGHT;
+        private bool _showCaptionIcon = true;
+        private Font? _captionTextFont;
+        private Rectangle _iconBounds;
+        private Rectangle _titleBounds;
         private Rectangle _captionBounds;
         private Rectangle _minimizeBounds;
         private Rectangle _maximizeBounds;
@@ -36,6 +44,9 @@ namespace WinForms.Fluent.UI
         private bool _isColorPrevalent;
         private bool _formIsActive;
         private bool _preventResize;
+        private bool _isFormLoaded;
+        private bool _isLoadedMaximized;
+        private bool _hasBeenRestored;
 
         protected FluentForm()
         {
@@ -58,9 +69,61 @@ namespace WinForms.Fluent.UI
             _formIsActive = true;
         }
 
-        private bool _isFormLoaded;
-        private bool _isLoadedMaximized;
-        private bool _hasBeenRestored;
+        public override string Text
+        {
+            get => base.Text;
+            set
+            {
+                base.Text = value;
+                CreateCaptionBounds();
+                Invalidate();
+            }
+        }
+
+        [Category("Appearance"),
+         Description("The caption height of this form.")]
+        public int CaptionHeight
+        {
+            get => _captionHeight;
+            set
+            {
+                if (value == _captionHeight) 
+                    return;
+
+                _captionHeight = value;
+                CreateCaptionBounds();
+                Invalidate();
+            }
+        }
+
+        [Category("Appearance"),
+         Description("Indicates whether to show caption icon.")]
+        public bool ShowCaptionIcon
+        {
+            get => _showCaptionIcon;
+            set
+            {
+                if(value == _showCaptionIcon)
+                    return;
+
+                _showCaptionIcon = value;
+                CreateCaptionBounds();
+                Invalidate();
+            }
+        }
+
+        [Category("Appearance"),
+         Description("The font used to display caption text.")]
+        public Font CaptionTextFont
+        {
+            get => _captionTextFont ?? Font;
+            set
+            {
+                _captionTextFont = value;
+                CreateCaptionBounds();
+                Invalidate();
+            }
+        }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -266,7 +329,7 @@ namespace WinForms.Fluent.UI
             WinApi.AdjustWindowRectEx(ref rcFrame, WinApi.WS_OVERLAPPEDWINDOW & ~WinApi.WS_CAPTION, false);
 
             // Vertical (Y).
-            if (cursorPosition.Y >= rcWindow.Top && cursorPosition.Y < rcWindow.Top + DEFAULT_CAPTION_HEIGHT)
+            if (cursorPosition.Y >= rcWindow.Top && cursorPosition.Y < rcWindow.Top + _captionHeight)
             {
                 isOnResizeBorder = (cursorPosition.Y < (rcWindow.Top - rcFrame.Top));
 
@@ -329,9 +392,23 @@ namespace WinForms.Fluent.UI
             return hitTestGrid[row, column];
         }
 
+        private void CreateCaptionBounds()
+        {
+            // Icon.
+            var captionLeftCorner = new Point(ICON_SIZE, (_captionHeight - ICON_SIZE) / 2);
+            _iconBounds = new Rectangle(captionLeftCorner, new Size(ICON_SIZE, ICON_SIZE));
+
+            // Title.
+            using var graphics = CreateGraphics();
+            var titleSize = TextRenderer.MeasureText(graphics, Text, CaptionTextFont, Size.Empty, TextFormatFlags.NoPadding);
+            var titleLocation = _showCaptionIcon ? new Point(_iconBounds.Right + ICON_SIZE, (_captionHeight - titleSize.Height) / 2) : captionLeftCorner;
+            
+            _titleBounds = new Rectangle(titleLocation, titleSize);
+        }
+
         private void CreateCaptionButtonBounds(int clientRight)
         {
-            var captionSize = new Size(CAPTION_BUTTON_WIDTH, DEFAULT_CAPTION_HEIGHT - _topBorderOffset);
+            var captionSize = new Size(CAPTION_BUTTON_WIDTH, DEFAULT_CAPTION_BUTTON_HEIGHT - _topBorderOffset);
 
             var minimizeLocation = new POINT(clientRight - CAPTION_BUTTON_WIDTH * 3, _topBorderOffset);
             var maximizeLocation = new Point(clientRight - CAPTION_BUTTON_WIDTH * 2, _topBorderOffset);
@@ -373,7 +450,7 @@ namespace WinForms.Fluent.UI
                 guidePen.DashStyle = DashStyle.Dash;
 
                 graphics.DrawRectangle(guidePen, new Rectangle(Point.Empty, new Size(ClientSize.Width - 1, ClientSize.Height - 1)));
-                graphics.DrawLine(guidePen, new Point(0, DEFAULT_CAPTION_HEIGHT), new Point(ClientRectangle.Right, DEFAULT_CAPTION_HEIGHT));
+                graphics.DrawLine(guidePen, new Point(0, _captionHeight), new Point(ClientRectangle.Right, _captionHeight));
                 guidePen.Dispose();
             }
 
@@ -397,13 +474,25 @@ namespace WinForms.Fluent.UI
                     break;
             }
 
+            // Caption title.
+            if(_showCaptionIcon)
+            {
+                graphics.DrawIcon(Icon, _iconBounds);
+            }
+            
+            if (!string.IsNullOrEmpty(Text))
+            {
+                graphics.FillRectangle(backgroundBrush, _titleBounds);
+                TextRenderer.DrawText(graphics, Text, CaptionTextFont, _titleBounds.Location, ForeColor, TextFormatFlags.NoPadding);
+            }
+
             // Caption button icons.
             var glyphFont = SegoeFluentIcons.CreateFont(CAPTION_ICON_SIZE);
             var glyphColor = Color.FromArgb(23, 23, 23);
             var disabledGlyphColor = Color.FromArgb(199, 192, 192);
 
             var glyphXOffset = (CAPTION_BUTTON_WIDTH - CAPTION_ICON_SIZE) / 2;
-            var glyphYOffset = (DEFAULT_CAPTION_HEIGHT - CAPTION_ICON_SIZE) / 2;
+            var glyphYOffset = (DEFAULT_CAPTION_BUTTON_HEIGHT - CAPTION_ICON_SIZE) / 2;
             var minimizeOffset = _minimizeBounds.Left + glyphXOffset;
             var maximizeOffset = _maximizeBounds.Left + glyphXOffset;
             var closeOffset = _closeBounds.Left + glyphXOffset;

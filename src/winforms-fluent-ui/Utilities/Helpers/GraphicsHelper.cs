@@ -153,12 +153,12 @@ namespace WinForms.Fluent.UI.Utilities.Helpers
 
         #region PInvoke
 
-        public static short GetHighWord(IntPtr param)
+        private static short GetHighWord(IntPtr param)
         {
             return unchecked((short)((long)param >> 16));
         }
 
-        public static short GetLowWord(IntPtr param)
+        private static short GetLowWord(IntPtr param)
         {
             return unchecked((short)(long)param);
         }
