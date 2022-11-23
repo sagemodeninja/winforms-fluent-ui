@@ -33,7 +33,7 @@ namespace winforms_fluent_ui_gallery
                 var control = (RadioButton)profileTypeGroup.Controls[idx];
                 if (control.Checked)
                 {
-                    personPicture1.ProfileType = (ProfileType)idx;
+                    personPicture1.ProfileType = (ProfileType)(2 - idx);
                     break;
                 }
             }

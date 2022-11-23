@@ -146,7 +146,7 @@ namespace winforms_fluent_ui_gallery
             // 
             this.personPicture1.DisplayName = "Gary Antier";
             this.personPicture1.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.personPicture1.Initials = "SB";
+            this.personPicture1.Initials = "";
             this.personPicture1.Location = new System.Drawing.Point(37, 266);
             this.personPicture1.Name = "personPicture1";
             this.personPicture1.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
@@ -203,8 +203,8 @@ namespace winforms_fluent_ui_gallery
             // profileTypeGroup
             // 
             this.profileTypeGroup.Controls.Add(this.profileImageRadio);
-            this.profileTypeGroup.Controls.Add(this.initialsRadio);
             this.profileTypeGroup.Controls.Add(this.displayNameRadio);
+            this.profileTypeGroup.Controls.Add(this.initialsRadio);
             this.profileTypeGroup.Location = new System.Drawing.Point(157, 243);
             this.profileTypeGroup.Name = "profileTypeGroup";
             this.profileTypeGroup.Size = new System.Drawing.Size(149, 129);

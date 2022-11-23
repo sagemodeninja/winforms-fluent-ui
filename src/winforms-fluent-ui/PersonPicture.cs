@@ -15,7 +15,6 @@ namespace WinForms.Fluent.UI
     {
         private const float DEFAULT_RADIUS = 47.5f;
 
-        private readonly Color _borderColor;
         private readonly Color _backColor;
         private readonly Color _initialsColor;
 
@@ -34,7 +33,6 @@ namespace WinForms.Fluent.UI
         private IComObject<ID2D1SolidColorBrush> _initialsBrush;
         private IComObject<IDWriteTextFormat>? _initialsFormat;
         private D2D1_ELLIPSE _maskEllipse;
-        private ID2D1EllipseGeometry _ellipseGeometry;
         private D2D_POINT_2F _initialsOrigin;
         private float _initialsSize;
 
@@ -52,7 +50,6 @@ namespace WinForms.Fluent.UI
             _profileType = ProfileType.ProfileImage;
             _displayName = null!;
             _initials = null!;
-            _borderColor = Color.FromArgb(218, 218, 218);
             _backColor = Color.FromArgb(220, 220, 220);
             _initialsColor = Color.FromArgb(23, 23, 23);
         }
@@ -73,18 +70,6 @@ namespace WinForms.Fluent.UI
 
             base.OnPaddingChanged(e);
         }
-
-        //public new Padding Padding
-        //{
-        //    get => base.Padding;
-        //    set
-        //    {
-        //        base.Padding = value;
-
-        //        CalculateLayout();
-        //        Invalidate();
-        //    }
-        //}
 
         [Category("Behavior"),
          Description("Gets or sets the contact's initials.")]
@@ -227,7 +212,7 @@ namespace WinForms.Fluent.UI
                     _renderTarget.FillEllipse(ref _ellipse, _ellipseBrush.Object);
 
                     // Initials.
-                    var initials = _profileType == ProfileType.DisplayName && !string.IsNullOrEmpty(_displayName)
+                    var initials = _profileType >= ProfileType.DisplayName && !string.IsNullOrEmpty(_displayName)
                         ? GetInitialsFromDisplayName(_displayName)
                         : _initials;
 
@@ -326,8 +311,6 @@ namespace WinForms.Fluent.UI
 
             var initialsColor = GraphicsHelper.ColorToD3dColor(_initialsColor);
             _initialsBrush = _renderTarget.CreateSolidColorBrush<ID2D1SolidColorBrush>(initialsColor);
-
-            _factory.CreateEllipseGeometry(_ellipse, out _ellipseGeometry);
 
             return hr;
         }

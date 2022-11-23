@@ -2,8 +2,8 @@
 {
     public enum ProfileType
     {
-        ProfileImage,
+        Initials,
         DisplayName,
-        Initials
+        ProfileImage
     }
 }
