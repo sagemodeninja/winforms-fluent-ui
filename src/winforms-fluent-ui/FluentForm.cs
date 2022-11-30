@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using WinForms.Fluent.UI.Extensions;
 using WinForms.Fluent.UI.Utilities.Classes;
 using WinForms.Fluent.UI.Utilities.Enums;
 using WinForms.Fluent.UI.Utilities.Helpers;
@@ -455,8 +456,10 @@ namespace WinForms.Fluent.UI
             }
 
             // Caption highlight.
-            var highlightColor = Color.FromArgb(233, 233, 233);
-            var highlightBrush = new SolidBrush(highlightColor);
+            var isBackColorDark = BackColor.IsDark();
+            var highlightColor = isBackColorDark ? Color.FromArgb(255, 255, 255) : Color.FromArgb(0, 0, 0);
+            var alphaBlended = BackColor.AlphaBlend(highlightColor, 0.06f);
+            var highlightBrush = new SolidBrush(alphaBlended);
 
             switch (_lastKnownHitResult)
             {
@@ -488,7 +491,7 @@ namespace WinForms.Fluent.UI
 
             // Caption button icons.
             var glyphFont = SegoeFluentIcons.CreateFont(CAPTION_ICON_SIZE);
-            var glyphColor = Color.FromArgb(23, 23, 23);
+            var glyphColor = isBackColorDark ? Color.FromArgb(255, 255, 255) : Color.FromArgb(23, 23, 23);
             var disabledGlyphColor = Color.FromArgb(199, 192, 192);
 
             var glyphXOffset = (CAPTION_BUTTON_WIDTH - CAPTION_ICON_SIZE) / 2;
