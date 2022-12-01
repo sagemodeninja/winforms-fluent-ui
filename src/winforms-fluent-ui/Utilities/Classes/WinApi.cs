@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DirectN;
+using System;
 using System.Runtime.InteropServices;
 using WinForms.Fluent.UI.Utilities.Enums;
 using WinForms.Fluent.UI.Utilities.Structures;
@@ -15,6 +16,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         
         public const int WM_CREATE = 0x0001;
         public const int WM_DESTROY = 0x0002;
+        public const int WM_ACTIVATE = 0x0006;
         public const int WM_PAINT = 0x000f;
         public const int WM_TIMER = 0x0113;
         public const int WM_MOUSEMOVE = 0x0200;
@@ -40,6 +42,9 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
+		[DllImport("dwmapi.dll", PreserveSig = false)]
+        static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
+
         // User 32.
         [DllImport("user32.dll", ExactSpelling = true)]
         public static extern IntPtr SetTimer(IntPtr hWnd, IntPtr nIDEvent, uint uElapse, IntPtr lpTimerFunc);
@@ -61,14 +66,20 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public static extern bool AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT lpPaint);
+        public static extern IntPtr BeginPaint(IntPtr hwnd, out Structures.PAINTSTRUCT lpPaint);
 
         [DllImport("user32.dll")]
-        public static extern bool EndPaint(IntPtr hWnd, [In] ref PAINTSTRUCT lpPaint);
+        public static extern bool EndPaint(IntPtr hWnd, [In] ref Structures.PAINTSTRUCT lpPaint);
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetWindowDC(IntPtr hWnd);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("user32.dll")]
+        static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDc);
 
         [DllImport("user32.dll")]
         public static extern int ShowWindow(IntPtr hWnd, uint Msg);
