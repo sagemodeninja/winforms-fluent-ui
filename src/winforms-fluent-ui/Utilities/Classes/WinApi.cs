@@ -43,7 +43,7 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
 		[DllImport("dwmapi.dll", PreserveSig = false)]
-        static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
+        public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 
         // User 32.
         [DllImport("user32.dll", ExactSpelling = true)]
@@ -72,14 +72,14 @@ namespace WinForms.Fluent.UI.Utilities.Classes
         public static extern bool EndPaint(IntPtr hWnd, [In] ref Structures.PAINTSTRUCT lpPaint);
 
         [DllImport("user32.dll")]
-        static extern IntPtr GetWindowDC(IntPtr hWnd);
+        public static extern IntPtr GetWindowDC(IntPtr hWnd);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
-        static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDc);
+        public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDc);
 
         [DllImport("user32.dll")]
         public static extern int ShowWindow(IntPtr hWnd, uint Msg);
